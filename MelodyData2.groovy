@@ -27,6 +27,12 @@ class MelodyData2 {
     engine.resetMelodicOutline()
   }
 
+  def storeCursorPosition(int from, int thru, int y) {
+      (from..thru).each { i ->
+      		curve1[i-cfg.getKeyboardWidth] = y;
+    	}
+  }
+
 
   def updateCurve(int from, int thru) {
 

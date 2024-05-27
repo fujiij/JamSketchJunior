@@ -107,6 +107,21 @@ dependencies {
     // https://mvnrepository.com/artifact/xalan/serializer
     implementation 'xalan:serializer:2.7.2'
 
+    // https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api
+    compileOnly group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.13.0'
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.0'
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.13.0'
+
+    implementation "org.glassfish.tyrus:tyrus-server:2.0.0" 
+    implementation "org.glassfish.tyrus:tyrus-container-grizzly-server:2.0.0" 
+    implementation group: 'org.glassfish.tyrus.bundles', name: 'tyrus-standalone-client', version: '2.1.5'
 }
 
 compileJava.options.encoding = "UTF-8"

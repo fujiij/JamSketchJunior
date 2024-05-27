@@ -63,6 +63,9 @@ class Config {
    int CHANNEL_GUIDE = 2
    int CHANNEL_ACC = 1
    int GUIDE_SMOOTHNESS = 10
+   def mode = 'server'
+   def host = 'localhost'
+   int port = 8181
 }
 
 new Config()

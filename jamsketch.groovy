@@ -20,6 +20,12 @@ import java.nio.file.Paths;
 import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import jp.crestmuse.cmx.processing.gui.SimplePianoRoll
 
+import jp.jamsketch.controller.IJamSketchController;
+import jp.jamsketch.controller.JamSketchController;
+import jp.jamsketch.controller.JamSketchClientController;
+import jp.jamsketch.controller.JamSketchServerController;
+import jp.jamsketch.web.ServiceLocator;
+
 class JamSketch extends SimplePianoRoll {
 
   GuideData guideData
@@ -29,7 +35,7 @@ class JamSketch extends SimplePianoRoll {
   int fullMeasure
   int mCurrentMeasure
   double DebugModeDraw
-
+  IJamSketchController controller;
 
   static def CFG
 
@@ -55,11 +61,25 @@ class JamSketch extends SimplePianoRoll {
       }
     }
 
-    initData()
+    def melodyData = initData()
+    def origController = new JamSketchController(melodyData, this::initData);
+    
+    if (CFG.mode == "server"){
+      controller = new JamSketchServerController(CFG.host, CFG.port, origController);
+    }    
+    else if (CFG.mode == "client"){
+      controller = new JamSketchClientController(CFG.host, CFG.port, origController);
+    }
+    else{
+      controller = origController;
+    }
+    def serviceLocator = ServiceLocator.GetInstance();
+		serviceLocator.setContoller(controller);
+
     // add WindowListener (windowClosing) which calls exit();
   }
 
-  void initData() {
+  MelodyData2 initData() {
     melodyData = new MelodyData2(CFG.MIDFILENAME, (width - CFG.getKeyboardWidth) as int, this, this, CFG)
     smfread(melodyData.scc.getMIDISequence())
     def part =
@@ -72,6 +92,11 @@ class JamSketch extends SimplePianoRoll {
     if (CFG.SHOW_GUIDE)
       guideData = new GuideData(CFG.MIDFILENAME, (width - CFG.getKeyboardWidth) as int, this)
     fullMeasure = dataModel.getMeasureNum() * CFG.REPEAT_TIMES;
+    
+    setTickPosition(0)
+    dataModel.setFirstMeasure(CFG.INITIAL_BLANK_MEASURES)
+
+    return melodyData;
   }
 
 
@@ -86,7 +111,6 @@ class JamSketch extends SimplePianoRoll {
     if(pmouseX < mouseX &&
             mouseX > beat2x(getCurrentMeasure(), getCurrentBeat()) + 10) {
       if (isUpdatable()) {
-        storeCursorPosition()
         updateCurve()
       }
     }
@@ -128,15 +152,7 @@ class JamSketch extends SimplePianoRoll {
   }
 
   void updateCurve() {
-    melodyData.updateCurve(pmouseX, mouseX)
-  }
-
-  void storeCursorPosition() {
-    (pmouseX..mouseX).each { i ->
-
-      melodyData.curve1[i-CFG.getKeyboardWidth] = mouseY
-
-    }
+    this.controller.updateCurve(pmouseX, mouseX, mouseY)
   }
 
   boolean isUpdatable() {
@@ -196,9 +212,7 @@ class JamSketch extends SimplePianoRoll {
   }
 
   void resetMusic() {
-    initData()
-    setTickPosition(0)
-    dataModel.setFirstMeasure(CFG.INITIAL_BLANK_MEASURES)
+    this.controller.reset();
     makeLog("reset")
   }
 
