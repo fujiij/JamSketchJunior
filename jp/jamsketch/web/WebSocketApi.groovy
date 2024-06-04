@@ -15,45 +15,67 @@ import jakarta.websocket.server.ServerEndpoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Websocket Endpoint implementation class HelloEndPoint
+ * WebSocketのサーバークラス
  */
-
 @ServerEndpoint("/WebSocketApi")
 class WebSocketApi {
-	// 現在のセッションを記録
-    
+
+	// 現在のセッション
 	Session currentSession = null;
 	
-	
+	/**
+     * 接続時のコールバック
+     * @param session セッション
+	 * @param ec エンドポイントの設定
+     */
 	@OnOpen
 	public void onOpen(Session session, EndpointConfig ec) {
+		// セッションを記録する
 		this.currentSession = session;
 		def serviceLocator = ServiceLocator.GetInstance();
     	serviceLocator.setSession(this.currentSession);
 	}
-	/* メッセージを受信したとき */
+	
+	/**
+     * メッセージ受信時のコールバック
+     * @param message メッセージ 
+     */
 	@OnMessage
-	public void receiveMessage(String msg) throws IOException {
-		System.out.println(msg);
+	public void receiveMessage(String message) throws IOException {
+		// メッセージをコンソールに出力する
+		System.out.println(message);
 		
 		try{
+			// 操作クラスのインスタンスを取得する
 			def serviceLocator = ServiceLocator.GetInstance();
 			def controller = serviceLocator.getContoller();
+
+			// JSONで送られたメッセージをデコードする
 			ObjectMapper mapper = new ObjectMapper();
-			ClientParameter info = mapper.readValue(msg, ClientParameter.class);
+			ClientParameter info = mapper.readValue(message, ClientParameter.class);
 		
+		    // 操作クラスを使って楽譜データを更新する
         	controller.updateCurve(info.from, info.thru, info.y);
 		}
 		catch (Exception e){
+			// 例外をコンソールに出力する
 			System.out.println(e);
 		}
 	}
 
-	/* 接続がクローズしたとき */
+	/**
+     * 接続終了時のコールバック
+     * @param session セッション
+	 * @param reason 終了原因
+     */
 	@OnClose
 	public void onClose(Session session, CloseReason reason) {
 	}
-	/* 接続エラーが発生したとき */
+
+	/**
+     * 接続エラー時のコールバック
+     * @param t エラー内容
+     */
 	@OnError
 	public void onError(Throwable t) {
 	}

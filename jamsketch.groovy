@@ -35,6 +35,8 @@ class JamSketch extends SimplePianoRoll {
   int fullMeasure
   int mCurrentMeasure
   double DebugModeDraw
+
+  // JamSketch操作クラス
   IJamSketchController controller;
 
   static def CFG
@@ -62,15 +64,20 @@ class JamSketch extends SimplePianoRoll {
     }
 
     def melodyData = initData()
+
+    // JamSketch操作クラスを初期化
     def origController = new JamSketchController(melodyData, this::initData);
     
     if (CFG.mode == "server"){
+      // サーバーで動かす場合に使う操作クラスを設定
       controller = new JamSketchServerController(CFG.host, CFG.port, origController);
     }    
     else if (CFG.mode == "client"){
+      // クライアントで動かす場合に使う操作クラスを設定
       controller = new JamSketchClientController(CFG.host, CFG.port, origController);
     }
     else{
+      // スタンドアロンで動かす場合はそのまま
       controller = origController;
     }
     def serviceLocator = ServiceLocator.GetInstance();
@@ -96,6 +103,7 @@ class JamSketch extends SimplePianoRoll {
     setTickPosition(0)
     dataModel.setFirstMeasure(CFG.INITIAL_BLANK_MEASURES)
 
+    // 初期化済みオブジェクトを返す
     return melodyData;
   }
 
@@ -152,6 +160,7 @@ class JamSketch extends SimplePianoRoll {
   }
 
   void updateCurve() {
+    // JamSketch操作クラスを使用して楽譜データを更新する
     this.controller.updateCurve(pmouseX, mouseX, mouseY)
   }
 
@@ -212,6 +221,7 @@ class JamSketch extends SimplePianoRoll {
   }
 
   void resetMusic() {
+    // JamSketch操作クラスを使用してリセットする
     this.controller.reset();
     makeLog("reset")
   }

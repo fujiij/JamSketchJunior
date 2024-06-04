@@ -4,22 +4,34 @@ import jakarta.websocket.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-// このアノテーションを付けるとクライアントのEndpointだと認識される
+/**
+ * WebSocketのクライアントクラス
+ */
 @ClientEndpoint
 class WebSocketClient {
 
-    Session session;
+    // セッション
+    private Session session;
 
+    /**
+     * コンストラクタ
+     */
     public WebSocketClinet() {
         super();
     }
 
-    // セッション確立時の処理
+    /**
+     * 接続時のコールバック
+     * @param session セッション
+     */
     @OnOpen
     public void onOpen(Session session) {
     }
 
-    // メッセージ受信時の処理
+    /**
+     * メッセージ受信時のコールバック
+     * @param message メッセージ
+     */
     @OnMessage
     public void onMessage(String message) {
         System.out.println(message);
@@ -39,20 +51,35 @@ class WebSocketClient {
 		}
     }
 
-    // メッセージ受信時の処理
+    /**
+     * エラー時のコールバック
+     * @param th エラー内容
+     */
     @OnError
     public void onError(Throwable th) {
     }
 
-    // セッション解放時の処理
+    /**
+     * 終了時のコールバック
+     * @param session セッション
+     */
     @OnClose
     public void onClose(Session session) {
     }
 
+    /**
+     * メッセージ送信処理
+     * @param object 送信オブジェクト
+     */
     public void Send(Object object) {
         this.session.getBasicRemote().sendText(new ObjectMapper().writeValueAsString(object));
     }
 
+    /**
+     * 初期化処理
+     * @param host 接続先ホスト
+     * @param port 接続先ポート
+     */
     public void Init(String host, int port) {
       // 初期化のため WebSocket コンテナのオブジェクトを取得する
       WebSocketContainer container = ContainerProvider
