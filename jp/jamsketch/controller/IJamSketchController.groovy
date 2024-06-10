@@ -1,9 +1,14 @@
 package jp.jamsketch.controller;
 
 /**
- * JamSketchを操作するクラスのインターフェース
+ * JamSketchの操作クラスのインターフェース
  */
 public interface IJamSketchController{
+
+    /**
+     * 初期化する
+     */
+    public void init();
 
 	/**
      * Curveを更新する

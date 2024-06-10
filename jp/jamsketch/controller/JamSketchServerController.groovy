@@ -31,6 +31,13 @@ public class JamSketchServerController implements IJamSketchController{
     public JamSketchServerController(String host, int port, IJamSketchController controller){
         this.innerController = controller;
         this.server = new Server(host, port, "/websockets", null, WebSocketApi.class);
+        this.init();
+    }
+
+    /**
+     * 初期化する
+     */
+    public void init(){
         this.server.start();
     }
 

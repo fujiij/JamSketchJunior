@@ -16,9 +16,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.awt.*;
+import javax.swing.*;
+
 
 import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import jp.crestmuse.cmx.processing.gui.SimplePianoRoll
+
+import jp.jamsketch.main.JamSketchEventListner;
+import jp.jamsketch.main.JamSketchEventListnerImpl;
 
 import jp.jamsketch.controller.IJamSketchController;
 import jp.jamsketch.controller.JamSketchController;
@@ -39,6 +45,9 @@ class JamSketch extends SimplePianoRoll {
   // JamSketch操作クラス
   IJamSketchController controller;
 
+  // ダイアログ
+  JPanel panel;
+
   static def CFG
 
   void setup() {
@@ -46,16 +55,27 @@ class JamSketch extends SimplePianoRoll {
     size(1200, 700)
     showMidiOutChooser()
     def p5ctrl = new ControlP5(this)
-    p5ctrl.addButton("startMusic").
-    setLabel("Start / Stop").setPosition(20, 645).
-      setSize(120, 40)
-    p5ctrl.addButton("resetMusic").
-    setLabel("Reset").setPosition(160, 645).setSize(120, 40)
-    
 
+    if (CFG.mode == "client") {
+      p5ctrl.addButton("reconnect").
+      setLabel("Reconnect").setPosition(20, 645).
+        setSize(120, 40)
+    }
+    else{
+      p5ctrl.addButton("startMusic").
+      setLabel("Start / Stop").setPosition(20, 645).
+        setSize(120, 40)
       p5ctrl.addButton("loadCurve").
       setLabel("Load").setPosition(300, 645).setSize(120, 40)
+    }
+    p5ctrl.addButton("resetMusic").
+    setLabel("Reset").setPosition(160, 645).setSize(120, 40)
 
+    panel = new JPanel();
+    BoxLayout layout = new BoxLayout( panel, BoxLayout.Y_AXIS );
+    panel.setLayout(layout);    
+    panel.add( new JLabel( "接続が切断されました。" ) ); 
+    JamSketchEventListner listner = new JamSketchEventListnerImpl(panel);
 
     if (CFG.MOTION_CONTROLLER != null) {
       CFG.MOTION_CONTROLLER.each { mCtrl ->
@@ -74,7 +94,7 @@ class JamSketch extends SimplePianoRoll {
     }    
     else if (CFG.mode == "client"){
       // クライアントで動かす場合に使う操作クラスを設定
-      controller = new JamSketchClientController(CFG.host, CFG.port, origController);
+      controller = new JamSketchClientController(CFG.host, CFG.port, origController, listner);
     }
     else{
       // スタンドアロンで動かす場合はそのまま
@@ -231,6 +251,13 @@ class JamSketch extends SimplePianoRoll {
     super.musicStopped()
 //    if (microsecondPosition >= sequencer.getMicrosecondLength())
 //      resetMusic()
+  }
+
+  /**
+    * 再接続する
+    */
+  void reconnect() {
+    this.controller.init();
   }
 
 

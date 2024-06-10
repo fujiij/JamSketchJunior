@@ -25,6 +25,13 @@ public class JamSketchController implements IJamSketchController{
     }
 
     /**
+     * 初期化する
+     */
+    public void init(){
+        // do nothing
+    }
+
+    /**
      * Curveを更新する
      * @param from 始点
      * @param thru 終点

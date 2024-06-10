@@ -7,6 +7,7 @@ import javax.websocket.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jp.jamsketch.main.JamSketchEventListner;
 import jp.jamsketch.web.WebSocketClient;
 import jp.jamsketch.web.ClientParameter;
 
@@ -22,16 +23,36 @@ public class JamSketchClientController implements IJamSketchController{
     // WebSocketクライアントクラス
     private WebSocketClient webSocketClient;
 
+    // 接続先ホスト
+    private String host;
+
+    // 接続先ポート
+    private int port;
+
+    // イベントリスナー
+    private JamSketchEventListner listner;
+
     /**
      * コンストラクタ
      * @param host 接続先ホスト
      * @param port 接続先ポート
      * @param controller 内部で持つ操作クラス
+     * @param listner イベントリスナー
      */
-    public JamSketchClientController(String host, int port, IJamSketchController controller){
+    public JamSketchClientController(String host, int port, IJamSketchController controller, JamSketchEventListner listner){
       this.innerController = controller;
-      this.webSocketClient = new WebSocketClient();        
-      this.webSocketClient.Init(host, port);
+      this.webSocketClient = new WebSocketClient();
+      this.host = host;
+      this.port = port;
+      this.listner = listner;  
+      this.init();
+    }
+
+    /**
+     * 初期化する
+     */
+    public void init(){      
+      this.webSocketClient.Init(this.host, this.port, this.listner);
     }
 
     /**

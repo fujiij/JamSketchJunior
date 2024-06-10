@@ -3,6 +3,7 @@ package jp.jamsketch.web;
 import jakarta.websocket.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jp.jamsketch.main.JamSketchEventListner;
 
 /**
  * WebSocketのクライアントクラス
@@ -13,8 +14,12 @@ class WebSocketClient {
     // セッション
     private Session session;
 
+    // イベントリスナー
+    private JamSketchEventListner listner;
+
     /**
      * コンストラクタ
+     * @param listner イベントリスナー
      */
     public WebSocketClinet() {
         super();
@@ -57,6 +62,7 @@ class WebSocketClient {
      */
     @OnError
     public void onError(Throwable th) {
+        this.listner.disconnected();
     }
 
     /**
@@ -65,6 +71,7 @@ class WebSocketClient {
      */
     @OnClose
     public void onClose(Session session) {
+        this.listner.disconnected();
     }
 
     /**
@@ -80,7 +87,7 @@ class WebSocketClient {
      * @param host 接続先ホスト
      * @param port 接続先ポート
      */
-    public void Init(String host, int port) {
+    public void Init(String host, int port, JamSketchEventListner listner) {
       // 初期化のため WebSocket コンテナのオブジェクトを取得する
       WebSocketContainer container = ContainerProvider
               .getWebSocketContainer();
@@ -88,5 +95,7 @@ class WebSocketClient {
       URI uri = URI
               .create("ws://" + host + ":" + port + "/websockets/WebSocketApi");
       this.session = container.connectToServer(this, uri);
+      
+      this.listner = listner;
     }
 }
