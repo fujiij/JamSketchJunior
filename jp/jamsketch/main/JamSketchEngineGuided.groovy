@@ -1,3 +1,5 @@
+package jp.jamsketch.main
+
 import jp.crestmuse.cmx.filewrappers.*
 
 class JamSketchEngineGuided extends JamSketchEngineAbstract {

@@ -1,3 +1,5 @@
+package jp.jamsketch.main
+
 import groovy.json.JsonSlurper
 import static JamSketch.CFG
 

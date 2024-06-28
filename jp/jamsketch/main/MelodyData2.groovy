@@ -1,3 +1,5 @@
+package jp.jamsketch.main
+
 class MelodyData2 {
   def width
   def pianoroll

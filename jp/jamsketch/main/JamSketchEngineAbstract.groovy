@@ -1,3 +1,5 @@
+package jp.jamsketch.main
+
 import groovy.json.*
 import jp.crestmuse.cmx.filewrappers.*
 import jp.crestmuse.cmx.processing.*

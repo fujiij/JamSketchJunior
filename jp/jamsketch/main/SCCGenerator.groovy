@@ -1,3 +1,5 @@
+package jp.jamsketch.main
+
 import groovy.transform.*
 import jp.crestmuse.cmx.inference.*
 import jp.crestmuse.cmx.processing.CMXController

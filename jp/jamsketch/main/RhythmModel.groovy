@@ -1,3 +1,5 @@
+package jp.jamsketch.main
+
 import groovy.transform.*
 import groovy.json.*
 import org.apache.commons.math3.genetics.*

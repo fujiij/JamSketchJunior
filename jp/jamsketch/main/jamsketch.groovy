@@ -1,3 +1,5 @@
+package jp.jamsketch.main
+
 import controlP5.ControlP5
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -386,12 +388,12 @@ class JamSketch extends SimplePianoRoll {
   static void main(String[] args) {
     // JamSketch.CFG = evaluate(new File("./config.txt"))
     JamSketch.CFG = evaluate(new File("./config_guided.txt"))
-    JamSketch.start("JamSketch")
+    JamSketch.start("jp.jamsketch.main.JamSketch")
   }
 
 }
 // JamSketch.CFG = evaluate(new File("./config.txt"))
 JamSketch.CFG = evaluate(new File("./config_guided.txt"))
-JamSketch.start("JamSketch")
+JamSketch.start("jp.jamsketch.main.JamSketch")
 // JamSketch.main("JamSketch", ["--external"] as String[])
   
