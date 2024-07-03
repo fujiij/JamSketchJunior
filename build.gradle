@@ -4,7 +4,7 @@ plugins {
     id 'edu.sc.seis.launch4j' version '2.5.4'
 }
 
-mainClassName = "JamSketch"
+mainClassName = "jp.jamsketch.main.JamSketch"
 
 repositories {
     google()
@@ -131,7 +131,7 @@ targetCompatibility = "1.8"
 
 application {
     // Define the main class for the application.
-    mainClass = 'JamSketch'
+    mainClass = 'jp.jamsketch.main.JamSketch'
 }
 
 task runScript(type: JavaExec) {
@@ -142,7 +142,7 @@ task runScript(type: JavaExec) {
     classpath(".")
     println(classpath.toString())
     main 'groovy.ui.GroovyMain'
-    args 'jamsketch.groovy'
+    args 'jp\\jamsketch\\main\\jamsketch.groovy'
 }
 
 task printEnv {
@@ -156,7 +156,7 @@ jar {
 
    //Specify the main class for manifest file.
    manifest {
-        attributes "Main-Class" : "jamsketch"
+        attributes "Main-Class" : "jp.jamsketch.main.jamsketch"
     }
 
     //Include multiple dependencies.
