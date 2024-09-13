@@ -394,6 +394,6 @@ class JamSketch extends SimplePianoRoll {
 }
 JamSketch.CFG = evaluate(new File("./config.txt"))
 //JamSketch.CFG = evaluate(new File("./config_guided.txt"))
-JamSketch.start("JamSketch")
+JamSketch.start("jp.jamsketch.main.JamSketch")
 // JamSketch.main("JamSketch", ["--external"] as String[])
   

@@ -1,4 +1,7 @@
+package jp.jamsketch.main;
+
 import jp.crestmuse.cmx.filewrappers.*
+import jp.jamsketch.main.*;
 
 class JamSketchEngineSimple extends JamSketchEngineAbstract {
     

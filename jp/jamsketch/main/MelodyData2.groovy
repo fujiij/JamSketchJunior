@@ -7,7 +7,8 @@ class MelodyData2 {
   def curve1
   def scc
   def cfg
-  
+  def PACKAGE_NAME = "jp.sketch.main"
+
   MelodyData2(filename, width, cmxcontrol, pianoroll, cfg) {
     this.width = width
     this.pianoroll = pianoroll
@@ -19,7 +20,7 @@ class MelodyData2 {
 	       cfg.BEATS_PER_MEASURE * scc.division, cfg.REPEAT_TIMES - 1)
     def target_part = scc.getFirstPartWithChannel(1)
 //    engine = new JamSketchEngineSimple()
-    engine = Class.forName(cfg.JAMSKETCH_ENGINE).newInstance()
+    engine = Class.forName(PACKAGE_NAME + "." + cfg.JAMSKETCH_ENGINE).newInstance()
     engine.init(scc, target_part, cfg)
     resetCurve()
   }
