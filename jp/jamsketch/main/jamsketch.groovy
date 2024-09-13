@@ -203,6 +203,11 @@ class JamSketch extends SimplePianoRoll {
       if (mCurrentMeasure < (fullMeasure - CFG.NUM_OF_RESET_AHEAD)) getDataModel().shiftMeasure(CFG.NUM_OF_MEASURES)
       melodyData.resetCurve()
       if (guideData != null) guideData.shiftCurve()
+      
+	if (controller instanceof jp.jamsketch.controller.JamSketchServerController) {
+       	   controller.resetClients();
+	}
+
     }
   }
 

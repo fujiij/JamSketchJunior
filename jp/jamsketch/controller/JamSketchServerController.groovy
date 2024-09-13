@@ -61,16 +61,20 @@ public class JamSketchServerController implements IJamSketchController{
     public void reset(){
         // 内部で持つ操作クラスでリセット処理をする
         this.innerController.reset();
+	resetClients();
+    }
+
+    public void resetClients() {
         def serviceLocator = ServiceLocator.GetInstance();
     	def currentSession = serviceLocator.getSession();
         Set<Session> sessions = currentSession.getOpenSessions();
-		for (Session session : sessions) {
-			try {
-				session.getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new ServerParameter("reset")));
+	for (Session session : sessions) {
+	    try {
+	    	session.getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new ServerParameter("reset")));
                 System.out.println(new ObjectMapper().writeValueAsString(new ServerParameter("reset")));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+   	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
+	}
     }
 }
