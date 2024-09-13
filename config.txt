@@ -81,8 +81,8 @@ class Config {
    int CHANNEL_ACC = 1
    int GUIDE_SMOOTHNESS = 10
 
-   def mode = 'server'
-   def host = 'localhost'
+   def mode = 'client'
+   def host = '192.168.11.4'
    int port = 8181
 
 

@@ -183,7 +183,8 @@ class JamSketch extends SimplePianoRoll {
 
   void updateCurve() {
     // JamSketch操作クラスを使用して楽譜データを更新する
-    this.controller.updateCurve(pmouseX, mouseX, mouseY)
+    if (pmouseX != -1 && mouseX != -1)
+      this.controller.updateCurve(pmouseX, mouseX, mouseY)
   }
 
   boolean isUpdatable() {
@@ -339,6 +340,7 @@ class JamSketch extends SimplePianoRoll {
   
   void mouseReleased() {
     nowDrawing = false
+    mouseX = -1
     if (isInside(mouseX, mouseY)) {
       if (!melodyData.engine.automaticUpdate()) {
         melodyData.engine.outlineUpdated(
