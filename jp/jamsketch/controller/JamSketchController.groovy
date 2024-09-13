@@ -1,5 +1,6 @@
 package jp.jamsketch.controller;
 
+import jp.jamsketch.main.MelodyData2;
 import java.util.function.Supplier;
 
 /**
