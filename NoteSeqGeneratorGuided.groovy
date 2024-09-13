@@ -91,9 +91,9 @@ class NoteSeqGeneratorGuided implements MusicCalculator {
   def calcLogBigram(nn, prev) {
     // println(nn + " " + prev)
     if (prev == null)
-      Math.log(unigram1[nn])
+      Math.log(unigram1[nn] * 0.95 + 0.05)
     else
-      Math.log(bigram[prev][nn])
+      Math.log(bigram[prev][nn] * 0.95 + 0.05)
   }
 
   int argmax(List<Double> list) {
