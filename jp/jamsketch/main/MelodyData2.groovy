@@ -7,7 +7,7 @@ class MelodyData2 {
   def curve1
   def scc
   def cfg
-  def PACKAGE_NAME = "jp.sketch.main"
+  def PACKAGE_NAME = "jp.jamsketch.main"
 
   MelodyData2(filename, width, cmxcontrol, pianoroll, cfg) {
     this.width = width
