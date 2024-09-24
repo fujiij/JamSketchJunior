@@ -3,7 +3,7 @@ package jp.jamsketch.web;
 /**
  * クライアントの送信用パラメータ
  */
-class ClientParameter {
+class ClientParameter{
     // 始点
     public int from;
 

@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.function.Supplier;
 
 public class RegistryObject<T> {
+
     private final Class<? extends T> register;
 
     private RegistryObject(Class<? extends T> register){

@@ -44,7 +44,7 @@ class MelodyData2 {
     int size2 = nMeas * div
   
     for (int i in from..thru) {
-  
+
       if (curve1[i-cfg.getKeyboardWidth] != null) {
         double nn = (curve1[i-cfg.getKeyboardWidth] == null ? null : pianoroll.y2notenum(curve1[i-cfg.getKeyboardWidth]))
         int ii = i - cfg.getKeyboardWidth
