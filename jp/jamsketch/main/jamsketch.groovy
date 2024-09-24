@@ -3,6 +3,7 @@ package jp.jamsketch.main
 import controlP5.ControlP5
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import jp.jamsketch.model.JamSketchModel
 
 // added by yonamine 20230208
 import java.io.File
@@ -38,6 +39,7 @@ class JamSketch extends SimplePianoRoll {
 
   GuideData guideData
   MelodyData2 melodyData
+  JamSketchModel model = new JamSketchModel();
   boolean nowDrawing = false
   String username = ""
   int fullMeasure
@@ -156,14 +158,28 @@ class JamSketch extends SimplePianoRoll {
   void drawCurve() {
     strokeWeight(3)
     stroke(0, 0, 255)
-
+/*
     (0..<(melodyData.curve1.size()-1)).each { i ->
       if (melodyData.curve1[i] != null &&
           melodyData.curve1[i+1] != null) {
         line(i+CFG.getKeyboardWidth, melodyData.curve1[i] as int, i+CFG.getKeyboardWidth+1,
              melodyData.curve1[i+1] as int)
       }
-    }    
+    }
+
+ */
+    for(ArrayList<jp.jamsketch.model.Point> curves : model.getCurves()){
+      jp.jamsketch.model.Point p0 = null
+      for(jp.jamsketch.model.Point p : curves){
+        if(p0 == null) {
+          p0 = p;
+        }else{
+          line(p0.x, p0.y, p.x, p.y);
+          p0 = p;
+        }
+      }
+    }
+
   }
 
   
@@ -185,6 +201,8 @@ class JamSketch extends SimplePianoRoll {
     // JamSketch操作クラスを使用して楽譜データを更新する
     if (pmouseX != -1 && mouseX != -1)
       this.controller.updateCurve(pmouseX, mouseX, mouseY)
+    jp.jamsketch.model.Point p = new jp.jamsketch.model.Point(mouseX, mouseY)
+    model.updateCurve(p)
   }
 
   boolean isUpdatable() {

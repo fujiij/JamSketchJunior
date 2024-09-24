@@ -140,7 +140,7 @@ class NoteSeqGenerator implements MusicCalculator {
   
   @CompileStatic
   double calcEntropy(int number, List<Integer> prevlist) {
-    int[] freq = [0] * 12
+    int[] freq = [0] * 12 as int[]
     int sum = 0
     prevlist.each {
       freq[it] += 1
