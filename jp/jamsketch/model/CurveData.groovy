@@ -1,16 +1,13 @@
-package jp.jamsketch.model;
+package jp.jamsketch.model
 
-import com.fasterxml.jackson.databind.annotation.NoClass
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
+
 
 public class CurveData {
-    final ArrayList<Point> curves = new ArrayList<>();
-
-
+    final CopyOnWriteArrayList<Point> curves = new ArrayList<>();
+    public final int SPLIT_DISTANCE = 50;
+    public final int CALCULATION_ERROR = 10;
     public CurveData(){}
 
     public void add(Point p){
@@ -21,11 +18,11 @@ public class CurveData {
             curves.remove(target);
             curves.add(p);
         }
-        print("Curve X:" + p.x)
         curves.sort(Comparator.comparingInt (o -> o.x));
     }
 
     public ArrayList<ArrayList<Point>> getAll(){
+
         ArrayList<ArrayList<Point>> pointers = new ArrayList<>();
         ArrayList<Point> split_curve = new ArrayList<>();
         Point p0 = null
@@ -34,7 +31,7 @@ public class CurveData {
                 p0 = p;
                 split_curve.add(p);
             }else{
-                if(Math.abs(p0.x - p.x) <= 50){
+                if(Math.abs(p0.x - p.x) <= SPLIT_DISTANCE){
                     split_curve.add(p);
                     p0 = p;
                 }else{
@@ -55,11 +52,42 @@ public class CurveData {
             if(p.x == x)
                 return p;
 
+
         return null;
+    }
+
+    public int getWidth(){
+        if(curves.isEmpty())
+            return 0;
+        else
+            return curves.max(Comparator.comparingInt (o -> o.x)).x;
+    }
+
+    public boolean isEmpty(){
+        return curves.isEmpty()
     }
 
     public void removeAll(){
         curves.clear();
     }
+
+    public void remove(int x0, x1){
+        for(Point p : curves){
+            if(p.x >= x0 && p.x <= x1){
+                curves.remove(p);
+            }
+        }
+    }
+
+    void marge(CurveData margeData){
+        ArrayList<Point> m = margeData.getAll().get(0);
+        remove(m.get(0).x, m.get(m.size() - 1).x);
+
+        for(Point p : m){
+            add(p);
+        }
+        margeData.removeAll();
+    }
+
 
 }

@@ -4,47 +4,37 @@ import controlP5.ControlP5
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import jp.jamsketch.model.JamSketchModel
+import jp.jamsketch.view.DisplayCurve
+import jp.jamsketch.view.IDisplay
 
-// added by yonamine 20230208
-import java.io.File
-import java.io.FileReader
-import java.io.BufferedReader
-import java.io.FileNotFoundException
-import java.io.IOException
-
-import java.io.FileWriter;
-import java.io.BufferedWriter;
-import java.io.PrintWriter;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import java.awt.*;
 import javax.swing.*;
 
 
 import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import jp.crestmuse.cmx.processing.gui.SimplePianoRoll
 
-import jp.jamsketch.main.JamSketchEventListner;
-import jp.jamsketch.main.JamSketchEventListnerImpl;
-
 import jp.jamsketch.controller.IJamSketchController;
 import jp.jamsketch.controller.JamSketchController;
 import jp.jamsketch.controller.JamSketchClientController;
 import jp.jamsketch.controller.JamSketchServerController;
-import jp.jamsketch.web.ServiceLocator;
+import jp.jamsketch.web.ServiceLocator
+
+import java.awt.Color
+import java.util.concurrent.CopyOnWriteArrayList;
 
 class JamSketch extends SimplePianoRoll {
 
   GuideData guideData
   MelodyData2 melodyData
   JamSketchModel model = new JamSketchModel();
+  CopyOnWriteArrayList<IDisplay> displays = new CopyOnWriteArrayList<>();
   boolean nowDrawing = false
   String username = ""
   int fullMeasure
   int mCurrentMeasure
   double DebugModeDraw
+
+
 
   // JamSketch操作クラス
   IJamSketchController controller;
@@ -75,6 +65,15 @@ class JamSketch extends SimplePianoRoll {
     p5ctrl.addButton("resetMusic").
     setLabel("Reset").setPosition(160, 645).setSize(120, 40)
 
+
+    /**
+     * リファクタリング
+     */
+    displays.add(new DisplayCurve(()->model.getCurves(), new Color(0, 0, 255)));
+    displays.add(new DisplayCurve(()->model.getMargeData(), new Color(255, 0, 0, 128)));
+
+
+
     panel = new JPanel();
     BoxLayout layout = new BoxLayout( panel, BoxLayout.Y_AXIS );
     panel.setLayout(layout);    
@@ -85,7 +84,7 @@ class JamSketch extends SimplePianoRoll {
       CFG.MOTION_CONTROLLER.each { mCtrl ->
         JamSketch.main("JamSketchSlave", [mCtrl] as String[])
       }
-    }
+}
 
     def melodyData = initData()
 
@@ -146,7 +145,11 @@ class JamSketch extends SimplePianoRoll {
         updateCurve()
       }
     }
-    drawCurve()
+
+    for(IDisplay d : displays){
+      d.display(this);
+    }
+
     if (getCurrentMeasure() == CFG.NUM_OF_MEASURES - CFG.NUM_OF_RESET_AHEAD)
       processLastMeasure()
     melodyData.engine.setFirstMeasure(getDataModel().
@@ -158,16 +161,7 @@ class JamSketch extends SimplePianoRoll {
   void drawCurve() {
     strokeWeight(3)
     stroke(0, 0, 255)
-/*
-    (0..<(melodyData.curve1.size()-1)).each { i ->
-      if (melodyData.curve1[i] != null &&
-          melodyData.curve1[i+1] != null) {
-        line(i+CFG.getKeyboardWidth, melodyData.curve1[i] as int, i+CFG.getKeyboardWidth+1,
-             melodyData.curve1[i+1] as int)
-      }
-    }
 
- */
     for(ArrayList<jp.jamsketch.model.Point> curves : model.getCurves()){
       jp.jamsketch.model.Point p0 = null
       for(jp.jamsketch.model.Point p : curves){
@@ -180,6 +174,18 @@ class JamSketch extends SimplePianoRoll {
       }
     }
 
+    for(ArrayList<jp.jamsketch.model.Point> curves : model.getMargeData()){
+      jp.jamsketch.model.Point p0 = null
+      for(jp.jamsketch.model.Point p : curves){
+        if(p0 == null) {
+          p0 = p;
+        }else{
+          stroke(color(255, 0,0, 128))
+          line(p0.x, p0.y, p.x, p.y);
+          p0 = p;
+        }
+      }
+    }
   }
 
   
@@ -366,6 +372,8 @@ class JamSketch extends SimplePianoRoll {
            CFG.DIVISION - 1)
       }
     }
+
+    model.mouseReleased();
   }
 
   void mouseDragged() {
