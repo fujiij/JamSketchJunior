@@ -1,6 +1,10 @@
 package jp.jamsketch.controller;
 
-import jp.jamsketch.main.MelodyData2;
+import jp.jamsketch.main.MelodyData2
+import jp.jamsketch.model.Point
+
+import java.awt.event.MouseListener
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 /**
@@ -14,6 +18,8 @@ public class JamSketchController implements IJamSketchController{
 
     // 初期化メソッド
     private Supplier<MelodyData2> initData;
+
+    private final CopyOnWriteArrayList<JamMouseListener> listeners = new CopyOnWriteArrayList<>();
     
     /**
      * コンストラクタ
@@ -25,7 +31,16 @@ public class JamSketchController implements IJamSketchController{
         this.initData = initData;
     }
 
-    /**
+    public void addListener(JamMouseListener listener){
+        listeners.add(listener)
+    }
+
+    @Override
+    void mouseReleased(Point p) {
+        for(JamMouseListener m : listeners)
+            m.mouseReleased(p);
+    }
+/**
      * 初期化する
      */
     public void init(){

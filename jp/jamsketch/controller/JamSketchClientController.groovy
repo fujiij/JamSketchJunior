@@ -1,4 +1,6 @@
-package jp.jamsketch.controller;
+package jp.jamsketch.controller
+
+import jp.jamsketch.model.Point;
 
 import java.net.URI;
 import java.util.Scanner;
@@ -78,5 +80,16 @@ public class JamSketchClientController implements IJamSketchController{
         // 内部で持つ操作クラスでリセット操作をする
         // クライアントはリセット時にデータは送らないため、他の処理はしない
         this.innerController.reset();
+    }
+
+    @Override
+    void addListener(JamMouseListener listener) {
+        innerController.addListener(listener);
+    }
+
+    @Override
+    void mouseReleased(Point p) {
+        innerController.mouseReleased(p);
+
     }
 }

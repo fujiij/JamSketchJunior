@@ -1,4 +1,6 @@
-package jp.jamsketch.controller;
+package jp.jamsketch.controller
+
+import jp.jamsketch.model.Point;
 
 /**
  * JamSketchの操作クラスのインターフェース
@@ -22,4 +24,11 @@ public interface IJamSketchController{
      * リセットする
      */
     public void reset();
+
+    /**
+     * 仮実装
+     */
+    public void addListener(JamMouseListener listener);
+
+    def void mouseReleased(Point p);
 }

@@ -1,9 +1,8 @@
 package jp.jamsketch.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.websocket.Session;
-
-
+import jakarta.websocket.Session
+import jp.jamsketch.model.Point;
 import jp.jamsketch.web.WebSocketApi;
 import jp.jamsketch.web.ServerParameter;
 import jp.jamsketch.web.ServiceLocator;
@@ -62,6 +61,16 @@ public class JamSketchServerController implements IJamSketchController{
         // 内部で持つ操作クラスでリセット処理をする
         this.innerController.reset();
 	resetClients();
+    }
+
+    @Override
+    void addListener(JamMouseListener listener) {
+        innerController.addListener(listener)
+    }
+
+    @Override
+    void mouseReleased(Point p) {
+        innerController.mouseReleased(p);
     }
 
     public void resetClients() {

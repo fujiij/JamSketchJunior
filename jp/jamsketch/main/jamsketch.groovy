@@ -3,7 +3,10 @@ package jp.jamsketch.main
 import controlP5.ControlP5
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import jp.jamsketch.model.JamSketchCurve
 import jp.jamsketch.model.JamSketchModel
+import jp.jamsketch.model.LunchInitFunction
+import jp.jamsketch.model.Point
 import jp.jamsketch.view.DisplayCurve
 import jp.jamsketch.view.IDisplay
 
@@ -26,14 +29,13 @@ class JamSketch extends SimplePianoRoll {
 
   GuideData guideData
   MelodyData2 melodyData
-  JamSketchModel model = new JamSketchModel();
+  JamSketchModel model;
   CopyOnWriteArrayList<IDisplay> displays = new CopyOnWriteArrayList<>();
   boolean nowDrawing = false
   String username = ""
   int fullMeasure
   int mCurrentMeasure
   double DebugModeDraw
-
 
 
   // JamSketch操作クラス
@@ -43,6 +45,7 @@ class JamSketch extends SimplePianoRoll {
   JPanel panel;
 
   static def CFG
+
 
   void setup() {
     super.setup()
@@ -65,15 +68,6 @@ class JamSketch extends SimplePianoRoll {
     p5ctrl.addButton("resetMusic").
     setLabel("Reset").setPosition(160, 645).setSize(120, 40)
 
-
-    /**
-     * リファクタリング
-     */
-    displays.add(new DisplayCurve(()->model.getCurves(), new Color(0, 0, 255)));
-    displays.add(new DisplayCurve(()->model.getMargeData(), new Color(255, 0, 0, 128)));
-
-
-
     panel = new JPanel();
     BoxLayout layout = new BoxLayout( panel, BoxLayout.Y_AXIS );
     panel.setLayout(layout);    
@@ -84,7 +78,7 @@ class JamSketch extends SimplePianoRoll {
       CFG.MOTION_CONTROLLER.each { mCtrl ->
         JamSketch.main("JamSketchSlave", [mCtrl] as String[])
       }
-}
+    }
 
     def melodyData = initData()
 
@@ -106,6 +100,7 @@ class JamSketch extends SimplePianoRoll {
     def serviceLocator = ServiceLocator.GetInstance();
 		serviceLocator.setContoller(controller);
 
+    LunchInitFunction.create(this).setup();
     // add WindowListener (windowClosing) which calls exit();
   }
 
@@ -157,37 +152,6 @@ class JamSketch extends SimplePianoRoll {
     enhanceCursor()
     drawProgress()
   }
-
-  void drawCurve() {
-    strokeWeight(3)
-    stroke(0, 0, 255)
-
-    for(ArrayList<jp.jamsketch.model.Point> curves : model.getCurves()){
-      jp.jamsketch.model.Point p0 = null
-      for(jp.jamsketch.model.Point p : curves){
-        if(p0 == null) {
-          p0 = p;
-        }else{
-          line(p0.x, p0.y, p.x, p.y);
-          p0 = p;
-        }
-      }
-    }
-
-    for(ArrayList<jp.jamsketch.model.Point> curves : model.getMargeData()){
-      jp.jamsketch.model.Point p0 = null
-      for(jp.jamsketch.model.Point p : curves){
-        if(p0 == null) {
-          p0 = p;
-        }else{
-          stroke(color(255, 0,0, 128))
-          line(p0.x, p0.y, p.x, p.y);
-          p0 = p;
-        }
-      }
-    }
-  }
-
   
 
   void drawGuideCurve() {
@@ -208,7 +172,7 @@ class JamSketch extends SimplePianoRoll {
     if (pmouseX != -1 && mouseX != -1)
       this.controller.updateCurve(pmouseX, mouseX, mouseY)
     jp.jamsketch.model.Point p = new jp.jamsketch.model.Point(mouseX, mouseY)
-    model.updateCurve(p)
+    model.curve.updateCurve(p)
   }
 
   boolean isUpdatable() {
@@ -276,6 +240,7 @@ class JamSketch extends SimplePianoRoll {
     // JamSketch操作クラスを使用してリセットする
     this.controller.reset();
     makeLog("reset")
+    model.curve.clear();
   }
 
   @Override
@@ -373,7 +338,7 @@ class JamSketch extends SimplePianoRoll {
       }
     }
 
-    model.mouseReleased();
+    controller.mouseReleased(new Point(mouseX, mouseY));
   }
 
   void mouseDragged() {
