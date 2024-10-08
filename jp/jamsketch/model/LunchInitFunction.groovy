@@ -27,6 +27,7 @@ class LunchInitFunction {
         JamSketchModel model = new JamSketchModel();
         model.curve.addContainer(new JamSketchCurve(main.controller));
         main.model = model;
+        main.ticker.add(model::tick)
 
         model.curve.setCurveData();
     }

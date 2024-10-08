@@ -7,6 +7,7 @@ import jp.jamsketch.model.JamSketchCurve
 import jp.jamsketch.model.JamSketchModel
 import jp.jamsketch.model.LunchInitFunction
 import jp.jamsketch.model.Point
+import jp.jamsketch.util.Tick
 import jp.jamsketch.view.DisplayCurve
 import jp.jamsketch.view.IDisplay
 
@@ -31,6 +32,7 @@ class JamSketch extends SimplePianoRoll {
   MelodyData2 melodyData
   JamSketchModel model;
   CopyOnWriteArrayList<IDisplay> displays = new CopyOnWriteArrayList<>();
+  CopyOnWriteArrayList<Tick> ticker = new CopyOnWriteArrayList<>();
   boolean nowDrawing = false
   String username = ""
   int fullMeasure
@@ -151,6 +153,9 @@ class JamSketch extends SimplePianoRoll {
       getFirstMeasure())
     enhanceCursor()
     drawProgress()
+
+    for(Tick t: ticker)
+      t.tick()
   }
   
 
@@ -169,8 +174,12 @@ class JamSketch extends SimplePianoRoll {
 
   void updateCurve() {
     // JamSketch操作クラスを使用して楽譜データを更新する
+    /*
     if (pmouseX != -1 && mouseX != -1)
       this.controller.updateCurve(pmouseX, mouseX, mouseY)
+
+     */
+
     jp.jamsketch.model.Point p = new jp.jamsketch.model.Point(mouseX, mouseY)
     model.curve.updateCurve(p)
   }

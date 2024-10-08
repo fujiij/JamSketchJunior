@@ -3,7 +3,9 @@ package jp.jamsketch.model
 import jp.jamsketch.controller.IJamSketchController
 import jp.jamsketch.controller.JamMouseListener
 import jp.jamsketch.controller.JamSketchController
-import jp.jamsketch.main.JamSketch;
+import jp.jamsketch.main.JamSketch
+
+import java.util.function.Consumer;
 
 public class JamSketchCurve implements ICurveContainer, JamMouseListener{
     public static final int PLAYER_MAIN = 0;
@@ -21,11 +23,14 @@ public class JamSketchCurve implements ICurveContainer, JamMouseListener{
     }
 
     @Override
-    void updateCurve(Point p, HashMap<Integer, CurveData> curves) {
-        if(p.x >= curves.get(PLAYER_MAIN).getWidth())
+    void updateCurve(Point p, HashMap<Integer, CurveData> curves, Consumer<CurveData> endUpdateCurveAction) {
+        if(p.x >= curves.get(PLAYER_MAIN).getWidth()) {
             curves.get(PLAYER_MAIN).add(p);
-        else
+            endUpdateCurveAction.accept(curves.get(PLAYER_MAIN));
+        }else {
             curves.get(PLAYER_MARGE).add(p);
+            endUpdateCurveAction.accept(curves.get(PLAYER_MARGE));
+        }
     }
 
     @Override

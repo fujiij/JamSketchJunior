@@ -1,5 +1,7 @@
 package jp.jamsketch.model
 
+import java.util.function.Consumer
+
 
 interface ICurveContainer {
     /**
@@ -15,7 +17,7 @@ interface ICurveContainer {
      * @param curves Curveクラスが保有するCurveData
      *
      */
-    public void updateCurve(Point p, HashMap<Integer, CurveData> curves);
+    public void updateCurve(Point p, HashMap<Integer, CurveData> curves, Consumer<CurveData> endUpdateCurveAction);
 
     /**
      * カーブデータの座標の情報をすべて削除する。
