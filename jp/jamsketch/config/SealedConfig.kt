@@ -11,7 +11,6 @@ sealed class SealedConfig {
         private val mapper = jacksonObjectMapper()
         var value : MutableMap<String, Any?> = mapper.readValue(jsonFile)
 
-        @JvmStatic
         var config : Config = (mapper.readValue(jsonFile, Config::class.java) as Config).let {
             it.chordprog.forEach { chord ->
                 it.chord_symbols.add(
@@ -24,7 +23,6 @@ sealed class SealedConfig {
         override fun load() {
         }
 
-        @JvmStatic
         override fun save() {
             println(jsonFile.path)
             mapper.addMixIn(ConfigJSON::class.java, Config::class.java)
@@ -33,14 +31,12 @@ sealed class SealedConfig {
     }
 }
 
-class ModelConfig : SealedConfig() {
-    companion object {
+data object ModelConfig : SealedConfig() {
 //  ModelConfig.config で参照したい場合
-//        var config = SealedConfig.config
-        fun save()  =  SealedConfig.save()
-    }
+//    var config = SealedConfig.config
+    fun save()  =  SealedConfig.save()
 }
 
-class ControllerConfig : SealedConfig() {}
+data object ControllerConfig : SealedConfig() {}
 
-class ViewConfig : SealedConfig() {}
+data object ViewConfig : SealedConfig() {}
