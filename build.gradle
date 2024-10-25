@@ -1,4 +1,5 @@
 plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.0.20'
     id 'groovy'
     id 'application'
     id 'edu.sc.seis.launch4j' version '2.5.4'
@@ -17,35 +18,16 @@ repositories {
         url "https://maven.scijava.org/content/groups/public/"
     }
 
-    // cmx
-    // maven {
-    //     name = "GitHubPackages"
-    //     url = uri("https://maven.pkg.github.com/kitaharalab/cmx")
-    //     credentials {
-    //         username = System.getenv("GITHUB_ACTOR")
-    //         password = System.getenv("GITHUB_TOKEN")
-    //     }
-    // }
 }
 
 sourceSets {
     main {
         java.srcDirs = [projectDir]
-        groovy.srcDirs = [projectDir]
     }
 }
 
 
 println("project dir ${projectDir}")
-// buildDir = projectDir
-
-//println(projectDir)
-//println(buildDir)
-//println(sourceSets.main.java.srcDirs)
-
-//configurations {
-//    groovyScript
-//}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: [])
@@ -122,12 +104,15 @@ dependencies {
     implementation "org.glassfish.tyrus:tyrus-server:2.0.0" 
     implementation "org.glassfish.tyrus:tyrus-container-grizzly-server:2.0.0" 
     implementation group: 'org.glassfish.tyrus.bundles', name: 'tyrus-standalone-client', version: '2.1.5'
+
+    // Kotlin
+    //// JSON
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0'
+
 }
 
 compileJava.options.encoding = "UTF-8"
-
-sourceCompatibility = "1.8"
-targetCompatibility = "1.8"
 
 application {
     // Define the main class for the application.

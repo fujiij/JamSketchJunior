@@ -1,0 +1,19 @@
+{
+  "midfilename": "blues02.mid",
+  "chordprog": ["C", "F", "C", "C", "F", "F", "C", "C", "G", "F", "C", "G"],
+  "num_of_measures": 1,
+  "num_of_reset_ahead": 1,
+  "division": 12,
+  "beats_per_measure": 4,
+  "initial_blank_measures": 2,
+  "repeat_times": 4,
+  "calc_length": 1,
+  "melody_execution_span": 150,
+  "tf_model_engine": "./onebar_model_div4",
+  "tf_model_engine_layer": "serving_default_first_layer_input",
+  "tf_model_input_col": 133,
+  "tf_model_output_col": 121,
+  "tf_note_num_start": 36,
+  "tf_rest_col": 121,
+  "tf_note_con_col_start": 60
+}
