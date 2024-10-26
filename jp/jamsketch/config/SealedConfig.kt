@@ -11,7 +11,8 @@ sealed class SealedConfig {
         private val mapper = jacksonObjectMapper()
         var value : MutableMap<String, Any?> = mapper.readValue(jsonFile)
 
-        var config : Config = (mapper.readValue(jsonFile, Config::class.java) as Config).let {
+        var config : Config =
+            (mapper.readValue(jsonFile, Config::class.java) as Config).let {
             it.chordprog.forEach { chord ->
                 it.chord_symbols.add(
                     ChordSymbol2.parse(chord)
@@ -31,12 +32,35 @@ sealed class SealedConfig {
     }
 }
 
+data object AccessibleConfig : SealedConfig() {
+    fun config() : Config? {
+        val stackTrace = Thread.currentThread().stackTrace
+        val callerClassName = stackTrace[3].className
+        val callerClass = Class.forName(callerClassName)
+        val implementsInterface = IConfigAccessible::class.java.isAssignableFrom(callerClass)
+        return if (implementsInterface) config else null
+    }
+    fun save() {
+        val stackTrace = Thread.currentThread().stackTrace
+        val callerClassName = stackTrace[3].className
+        val callerClass = Class.forName(callerClassName)
+        val implementsInterface = IConfigAccessible::class.java.isAssignableFrom(callerClass)
+        if (implementsInterface) { SealedConfig.save() }
+    }
+}
+
 data object ModelConfig : SealedConfig() {
 //  ModelConfig.config で参照したい場合
 //    var config = SealedConfig.config
     fun save()  =  SealedConfig.save()
 }
 
-data object ControllerConfig : SealedConfig() {}
+data object ControllerConfig : SealedConfig(
 
-data object ViewConfig : SealedConfig() {}
+) {
+
+}
+
+data object ViewConfig : SealedConfig() {
+
+}
