@@ -34,18 +34,19 @@ sealed class SealedConfig {
 
 data object AccessibleConfig : SealedConfig() {
     fun config() : Config? {
-        val stackTrace = Thread.currentThread().stackTrace
-        val callerClassName = stackTrace[3].className
-        val callerClass = Class.forName(callerClassName)
-        val implementsInterface = IConfigAccessible::class.java.isAssignableFrom(callerClass)
-        return if (implementsInterface) config else null
+        return if (isAssignableFrom(Thread.currentThread().stackTrace)) config else null
     }
+
     fun save() {
-        val stackTrace = Thread.currentThread().stackTrace
-        val callerClassName = stackTrace[3].className
-        val callerClass = Class.forName(callerClassName)
-        val implementsInterface = IConfigAccessible::class.java.isAssignableFrom(callerClass)
-        if (implementsInterface) { SealedConfig.save() }
+        if (isAssignableFrom(Thread.currentThread().stackTrace)) { SealedConfig.save() }
+    }
+
+    private fun isAssignableFrom(stackTrace: Array<StackTraceElement>) : Boolean {
+        stackTrace.forEach {
+            val callerClass = Class.forName(it.className)
+            if (IConfigAccessible::class.java.isAssignableFrom(callerClass)) return true
+        }
+        return false
     }
 }
 
