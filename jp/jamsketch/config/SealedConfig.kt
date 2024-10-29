@@ -1,6 +1,5 @@
 package jp.jamsketch.config
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import jp.crestmuse.cmx.misc.ChordSymbol2
 import java.io.File
 
@@ -9,7 +8,6 @@ sealed class SealedConfig {
     companion object : AbstractConfig() {
         private var jsonFile = File(this::class.java.getResource("config.json").path)
         private val mapper = jacksonObjectMapper()
-        var value : MutableMap<String, Any?> = mapper.readValue(jsonFile)
 
         @JvmStatic
         protected var config : Config =
