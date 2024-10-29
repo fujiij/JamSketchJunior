@@ -11,7 +11,8 @@ sealed class SealedConfig {
         private val mapper = jacksonObjectMapper()
         var value : MutableMap<String, Any?> = mapper.readValue(jsonFile)
 
-        var config : Config =
+        @JvmStatic
+        protected var config : Config =
             (mapper.readValue(jsonFile, Config::class.java) as Config).let {
             it.chordprog.forEach { chord ->
                 it.chord_symbols.add(
@@ -24,8 +25,8 @@ sealed class SealedConfig {
         override fun load() {
         }
 
+        @JvmStatic
         override fun save() {
-            println(jsonFile.path)
             mapper.addMixIn(ConfigJSON::class.java, Config::class.java)
             mapper.writeValue(jsonFile, config)
         }
@@ -33,16 +34,22 @@ sealed class SealedConfig {
 }
 
 data object AccessibleConfig : SealedConfig() {
-    fun config() : Config? {
-        return if (isAssignableFrom(Thread.currentThread().stackTrace)) config else null
-    }
+
+    val config : Config
+        get() {
+            if (isAssignableFrom(Thread.currentThread().stackTrace)) {
+                return SealedConfig.config
+            } else {
+                throw IllegalAccessException()
+            }
+        }
 
     fun save() {
         if (isAssignableFrom(Thread.currentThread().stackTrace)) { SealedConfig.save() }
     }
 
     private fun isAssignableFrom(stackTrace: Array<StackTraceElement>) : Boolean {
-        stackTrace.forEach {
+        stackTrace.reversed().forEach {
             val callerClass = Class.forName(it.className)
             if (IConfigAccessible::class.java.isAssignableFrom(callerClass)) return true
         }
