@@ -1,5 +1,5 @@
 package jp.jamsketch.config
 
 interface IConfigAccessible {
-    val config: Config?
+    val config: Config
 }
