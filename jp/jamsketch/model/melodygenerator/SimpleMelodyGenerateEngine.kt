@@ -1,19 +1,25 @@
 package jp.jamsketch.model.melodygenerator
 
+import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import jp.crestmuse.cmx.inference.MusicCalculator
+import jp.crestmuse.cmx.inference.MusicRepresentation
 
 /**
  * A MelodyGenerateEngine that generates simple melodies
  */
 class SimpleMelodyGenerateEngine : AbstractMelodyGenerateEngine() {
-    override fun musicCalculatorForOutline(): MusicCalculator {
-        return NoteSeqGenerator(
-            noteLayer = TODO(),
-            chordLayer = TODO(),
-            beatsPerMeas = TODO(),
-            entropy_bias = TODO(),
-            model = TODO()
-        )
+
+    override fun musicCalculatorForOutline(
+        noteLayer: String,
+        chordLayer: String,
+        guidepart: SCCDataSet.Part?,
+        mr: MusicRepresentation?,
+        initial: Int,
+        beatsPerMeas: Int,
+        entropyBias: Double,
+        model: Map<String, Any?>
+    ): MusicCalculator {
+        return NoteSeqGenerator(noteLayer, chordLayer, beatsPerMeas, entropyBias, model)
     }
 
     override fun outlineUpdated(measure: Int, tick: Int) {

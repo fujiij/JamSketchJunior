@@ -3,6 +3,7 @@ package jp.jamsketch.model.melodygenerator
 import jp.jamsketch.config.AccessibleConfig
 import jp.jamsketch.config.Config
 import jp.jamsketch.config.IConfigAccessible
+import jp.jamsketch.model.CurveData
 
 /**
  * Based on the curve information, a melody is generated.
@@ -12,9 +13,9 @@ import jp.jamsketch.config.IConfigAccessible
 class MelodyGenerator() : IConfigAccessible {
     override val config: Config = AccessibleConfig.config
     val melodyGenerateEngine: IMelodyGenerateEngine =
-        MelodyGenerateEngineRegistry.melodyGeneratEengines[""]?.value ?:
+        MelodyGenerateEngineRegistry.melodyGeneratEengines[config.melody_generate_engine]?.value!!
 
-    fun generate() {
+    fun generate(data: CurveData) {
         melodyGenerateEngine.generate()
     }
 }

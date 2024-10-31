@@ -15,5 +15,6 @@
   "tf_model_output_col": 121,
   "tf_note_num_start": 36,
   "tf_rest_col": 121,
-  "tf_note_con_col_start": 60
+  "tf_note_con_col_start": 60,
+  "melody_generate_engine": "SimpleMelodyGenerateEngine"
 }
