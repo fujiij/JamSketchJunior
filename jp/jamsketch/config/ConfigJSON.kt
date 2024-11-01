@@ -1,7 +1,7 @@
 package jp.jamsketch.config
 open class ConfigJSON(
     var midfilename: String = "",
-    var chordprog: ArrayList<String> = arrayListOf(),
+    var chordprog: Array<String> = emptyArray(),
     var num_of_measures: Int = 0,
     var num_of_reset_ahead: Int = 0,
     var division: Int = 0,
