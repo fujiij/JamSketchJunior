@@ -4,18 +4,22 @@ import jp.crestmuse.cmx.inference.MusicCalculator
 import jp.crestmuse.cmx.inference.MusicElement
 import jp.crestmuse.cmx.inference.MusicRepresentation
 import jp.crestmuse.cmx.misc.ChordSymbol2
+import jp.jamsketch.model.engine.IMelodyGenerateEngine
 
 /**
  * This class uses a trigram or bigram model to select notes and generate melodies.
  * Calculate rhythm and note scores based on a given outline or chord progression to generate the optimal melody.
  */
+@Deprecated(message = "リファクタリング後に削除予定")
 class NoteSeqGenerator(
+    private val engine: IMelodyGenerateEngine,
     private val noteLayer: String,
     private val chordLayer: String,
     private val beatsPerMeas: Int,
     private val entropy_bias: Double,
     model: Map<String, Any?>,
 ) : MusicCalculator {
+
     private val trigram = model["trigram"] as Map<String, List<Double>>
     private val bigram = model["bigram"] as List<List<Double>>
     private val chord_beat_dur_unigram = model["chord_beat_dur_unigram"] as Map<String, List<Double>>

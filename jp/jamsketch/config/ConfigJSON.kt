@@ -21,4 +21,5 @@ open class ConfigJSON(
     var jamsketch_engine: String = "",
     var tf_note_con_col_start: Int = 0,
     var melody_generate_engine: String = "",
+    var simple_note_seq_generator: String = "",
 )

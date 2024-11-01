@@ -4,6 +4,9 @@ import jp.jamsketch.config.AccessibleConfig
 import jp.jamsketch.config.Config
 import jp.jamsketch.config.IConfigAccessible
 import jp.jamsketch.model.CurveData
+import jp.jamsketch.model.MelodyData
+import jp.jamsketch.model.engine.IMelodyGenerateEngine
+import jp.jamsketch.model.engine.MelodyGenerateEngineRegistry
 
 /**
  * Based on the curve information, a melody is generated.
@@ -11,11 +14,15 @@ import jp.jamsketch.model.CurveData
  * Information on the algorithm used for generation is also stored.
  */
 class MelodyGenerator() : IConfigAccessible {
+
     override val config: Config = AccessibleConfig.config
-    val melodyGenerateEngine: IMelodyGenerateEngine =
-        MelodyGenerateEngineRegistry.melodyGeneratEengines[config.melody_generate_engine]?.value!!
+    private val melodyGenerativeEngine: IMelodyGenerateEngine =
+        MelodyGenerateEngineRegistry.melodyGenerateEngines[config.melody_generate_engine]?.value!!
+
+    private val noteGenerator: AbstractNoteSeqGenerator =
+        NoteSeqGeneratorRegistry.noteSeqGenerators[config.simple_note_seq_generator]?.value!!
 
     fun generate(data: CurveData) {
-        melodyGenerateEngine.generate()
+        val melodyData:MelodyData = noteGenerator.generateMusicDataFromCurveData(data, melodyGenerativeEngine)
     }
 }
