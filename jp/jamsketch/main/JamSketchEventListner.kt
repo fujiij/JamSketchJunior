@@ -1,12 +1,13 @@
 package jp.jamsketch.main
 
+import java.util.*
+
 /**
  * JamSketchのイベントリスナー
  */
-public interface JamSketchEventListner extends EventListener {
- 
+interface JamSketchEventListner : EventListener {
     /**
      * 切断された状態を通知する
      */
-    public void disconnected();
+    fun disconnected()
 }
