@@ -17,9 +17,9 @@ class LunchInitFunction(private val main: JamSketch) {
 
     protected fun loadModel() {
         val model = JamSketchModel()
-        model.curve.addContainer(JamSketchCurve(main.controller))
+        model.curve.addContainer(JamSketchCurve(main.controller!!))
         main.model = model
-        main.ticker.add(model::tick)
+        main.ticker.add(model)
 
         model.curve.setCurveData()
     }

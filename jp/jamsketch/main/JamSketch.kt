@@ -17,6 +17,7 @@ import jp.jamsketch.model.Point
 import jp.jamsketch.util.Tick
 import jp.jamsketch.view.IDisplay
 import jp.jamsketch.web.ServiceLocator
+import processing.core.PApplet
 import java.io.File
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
@@ -404,13 +405,12 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     var controller: IJamSketchController? = null
     var panel: JPanel? = null
 
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            start("jp.jamsketch.main.JamSketch")
-        }
-
-    }
+//    companion object {//        }
+////
+////    }
+//        @JvmStatic
+//        fun main(args: Array<String>) {
+//            start("jp.jamsketch.main.JamSketch")
 
     override val config = AccessibleConfig.config
 
@@ -421,4 +421,8 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     fun publicBeat2x(measure: Int, beat: Double) : Double {
         return this.beat2x(measure, beat)
     }
+}
+
+fun main() {
+    PApplet.main (arrayOf("jp.jamsketch.main.JamSketch"))
 }

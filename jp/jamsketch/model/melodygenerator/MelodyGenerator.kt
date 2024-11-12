@@ -20,7 +20,7 @@ class MelodyGenerator() : IConfigAccessible {
         MelodyGenerateEngineRegistry.melodyGenerateEngines[config.melody_generate_engine]?.value!!
 
     private val noteGenerator: AbstractNoteSeqGenerator =
-        NoteSeqGeneratorRegistry.noteSeqGenerators[config.simple_note_seq_generator]?.value!!
+        NoteSeqGeneratorRegistry.noteSeqGenerators[config.note_seq_generator]?.value!!
 
     fun generate(data: CurveData) {
         val melodyData:MelodyData = noteGenerator.generateMusicDataFromCurveData(data, melodyGenerativeEngine)

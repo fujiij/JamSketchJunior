@@ -33,4 +33,5 @@ open class ConfigJSON(
     var show_guide: Boolean = false,
     var melody_resetting: Boolean = false,
     var input_file_path: String = "",
+    var ent_bias: Double = 0.0,
 )

@@ -14,7 +14,7 @@ import java.io.File
 import java.util.*
 
 abstract class JamSketchEngineAbstract : JamSketchEngine {
-    fun init(scc: SCC, target_part: SCCDataSet.Part?, cfg: Config) {
+    override fun init(scc: SCC, target_part: SCC.Part, cfg: Config) {
         this.scc = scc
         this.cfg = cfg
         val mapper = jacksonObjectMapper()
@@ -34,7 +34,7 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         //    expgen.start(scc.getFirstPartWithChannel(1),
         //           getFullChordProgression(), cfg.BEATS_PER_MEASURE)
         // }
-        val sccgen = SCCGenerator(target_part!!, scc.division, OUTLINE_LAYER, expgen!!, cfg)
+        val sccgen = SCCGenerator(target_part as SCCDataSet.Part, scc.division, OUTLINE_LAYER, expgen!!, cfg)
         mr!!.addMusicCalculator(MELODY_LAYER, sccgen)
         val calc: MusicCalculator? = musicCalculatorForOutline()
         if (calc != null) {
@@ -67,7 +67,7 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         return ((mr!!.getMusicElement(OUTLINE_LAYER, measure, tick).mostLikely) as Double)
     }
 
-    abstract fun outlineUpdated(measure: Int, tick: Int): Any?
+    abstract fun outlineUpdated(measure: Int, tick: Int)
 
     abstract fun automaticUpdate(): Boolean
 

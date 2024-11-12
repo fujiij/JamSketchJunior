@@ -1,6 +1,7 @@
 package jp.jamsketch.main
 
 import groovy.lang.IntRange
+import jp.crestmuse.cmx.filewrappers.SCC
 import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import jp.crestmuse.cmx.misc.PianoRoll
 import jp.crestmuse.cmx.processing.CMXApplet
@@ -51,17 +52,17 @@ class MelodyData2(
 
     var engine: JamSketchEngine? = null
     var curve1: Array<Int?>? = null
-    var scc: SCCDataSet = ((CMXController.readSMFAsSCC(filename)) as SCCDataSet)
+    var scc: SCC = CMXController.readSMFAsSCC(filename)
     var pACKAGE_NAME: String = "jp.jamsketch.main"
 
     init {
-        scc.repeat(
+        scc.toDataSet().repeat(
             (cfg.initial_blank_measures * cfg.beats_per_measure * scc.division).toLong(),
             ((cfg.initial_blank_measures + cfg.num_of_measures) * cfg.beats_per_measure * scc.division).toLong(),
             cfg.repeat_times - 1
         )
 
-        val target_part = scc.getFirstPartWithChannel(1)
+        val target_part: SCCDataSet.Part  = scc.toDataSet().getFirstPartWithChannel(1)
 
         try {
             engine = ((Class.forName(pACKAGE_NAME + "." + cfg.jamsketch_engine).newInstance()) as JamSketchEngine)

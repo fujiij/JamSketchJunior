@@ -12,7 +12,7 @@ import jp.jamsketch.model.engine.IMelodyGenerateEngine
  */
 @Deprecated(message = "リファクタリング後に削除予定")
 class NoteSeqGenerator(
-    private val engine: IMelodyGenerateEngine,
+//    private val engine: IMelodyGenerateEngine,
     private val noteLayer: String,
     private val chordLayer: String,
     private val beatsPerMeas: Int,

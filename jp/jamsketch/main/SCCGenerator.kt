@@ -1,6 +1,7 @@
 package jp.jamsketch.main
 
 import groovy.lang.IntRange
+import jp.crestmuse.cmx.filewrappers.SCC
 import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import jp.crestmuse.cmx.inference.MusicCalculator
 import jp.crestmuse.cmx.inference.MusicRepresentation
@@ -13,7 +14,7 @@ class SCCGenerator(
     var sccdiv: Int,
     var curveLayer: String,
     var expgen: Any,
-    var cFG: Config
+    var cfg: Config
 ) : MusicCalculator {
     override fun updated(measure: Int, tick: Int, layer: String, mr: MusicRepresentation) {
         val e = mr.getMusicElement(layer, measure, tick)
@@ -23,9 +24,9 @@ class SCCGenerator(
             if (curvevalue != null) {
                 println("e.getMostLikely: " + e.mostLikely.javaClass.toString() + ", curvevalue: " + curvevalue.javaClass.toString())
                 val notenum = getNoteNum(e.mostLikely as Int, curvevalue as Double)
-                val duration = e.duration() * sccdiv / (cFG.division / cFG.beats_per_measure)
+                val duration = e.duration() * sccdiv / (cfg.division / cfg.beats_per_measure)
                 val onset =
-                    ((firstMeasure + measure) * cFG.division + tick) * sccdiv / (cFG.division / cFG.beats_per_measure)
+                    ((firstMeasure + measure) * cfg.division + tick) * sccdiv / (cfg.division / cfg.beats_per_measure)
                 synchronized(this) {
                     if (onset > CMXController.getInstance().tickPosition) {
                         target_part.noteList.forEach { note ->
