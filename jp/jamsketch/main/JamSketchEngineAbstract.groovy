@@ -35,6 +35,7 @@ abstract class JamSketchEngineAbstract implements JamSketchEngine {
     cfg.chordprog.eachWithIndex{ c, i ->
       mr.getMusicElement(CHORD_LAYER, i, 0).setEvidence(c)
     }
+
     // if (cfg.EXPRESSION) {
     //    expgen = new ExpressionGenerator()
     //    expgen.start(scc.getFirstPartWithChannel(1),
