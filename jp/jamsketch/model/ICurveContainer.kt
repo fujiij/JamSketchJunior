@@ -8,7 +8,7 @@ interface ICurveContainer {
      *
      * @param curves Curveクラスが保有するCurveData
      */
-    fun initCurveData(curves: HashMap<Int?, CurveData?>?)
+    fun initCurveData(curves: HashMap<Int, CurveData>)
 
     /**
      * 新しく座標が更新されたときに呼び出されるメソッド。
@@ -17,15 +17,15 @@ interface ICurveContainer {
      * @param p      新しく追加される座標の情報
      * @param curves Curveクラスが保有するCurveData
      */
-    fun updateCurve(p: Point?, curves: HashMap<Int?, CurveData?>?, endUpdateCurveAction: Consumer<CurveData?>?)
+    fun updateCurve(p: Point, curves: HashMap<Int, CurveData>, endUpdateCurveAction: Consumer<CurveData>)
 
     /**
      * カーブデータの座標の情報をすべて削除する。
      *
      * @param curves
      */
-    fun removeAll(curves: HashMap<Int?, CurveData?>?)
+    fun removeAll(curves: HashMap<Int, CurveData>)
 
-    fun tick(curves: HashMap<Int?, CurveData?>?) {
+    fun tick(curves: HashMap<Int, CurveData>) {
     }
 }

@@ -17,7 +17,7 @@ class Curve(endUpdateCurveAction: Consumer<CurveData>) : Runnable {
         for (c in curveContainers) c.removeAll(curveData)
     }
 
-    fun updateCurve(p: Point?) {
+    fun updateCurve(p: Point) {
         for (c in curveContainers) c.updateCurve(p, curveData, endUpdateCurveAction)
     }
 

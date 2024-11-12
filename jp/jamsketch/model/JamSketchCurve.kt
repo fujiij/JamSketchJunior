@@ -6,31 +6,31 @@ import java.util.function.Consumer
 
 class JamSketchCurve(controller: IJamSketchController) : ICurveContainer, JamMouseListener {
 
-    override fun initCurveData(curves: HashMap<Int?, CurveData?>?) {
+    override fun initCurveData(curves: HashMap<Int, CurveData>) {
         curves!![PLAYER_MAIN] = CurveData()
         curves[PLAYER_MARGE] = CurveData()
     }
 
     override fun updateCurve(
-        p: Point?,
-        curves: HashMap<Int?, CurveData?>?,
-        endUpdateCurveAction: Consumer<CurveData?>?,
+        p: Point,
+        curves: HashMap<Int, CurveData>,
+        endUpdateCurveAction: Consumer<CurveData>,
     ) {
-        if (p!!.x >= curves!![PLAYER_MAIN]!!.width) {
+        if (p.x >= curves[PLAYER_MAIN]!!.width) {
             curves[PLAYER_MAIN]!!.add(p)
-            endUpdateCurveAction!!.accept(curves[PLAYER_MAIN])
+            endUpdateCurveAction.accept(curves[PLAYER_MAIN]!!)
         } else {
             curves[PLAYER_MARGE]!!.add(p)
-            endUpdateCurveAction!!.accept(curves[PLAYER_MARGE])
+            endUpdateCurveAction.accept(curves[PLAYER_MARGE]!!)
         }
     }
 
-    override fun removeAll(curves: HashMap<Int?, CurveData?>?) {
+    override fun removeAll(curves: HashMap<Int, CurveData>) {
         curves!![PLAYER_MAIN]!!.removeAll()
     }
 
 
-    override fun tick(curves: HashMap<Int?, CurveData?>?) {
+    override fun tick(curves: HashMap<Int, CurveData>) {
         if (isReleased) {
             isReleased = false
             if (!curves!![PLAYER_MARGE]!!.isEmpty) curves[PLAYER_MAIN]!!
