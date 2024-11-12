@@ -22,12 +22,20 @@ repositories {
 
 sourceSets {
     main {
-        java.srcDirs = [projectDir]
+        java {
+            srcDirs = [projectDir]
+            destinationDirectory.set(file("$projectDir/build/classes/main"))
+        }
+        kotlin {
+            srcDirs = [projectDir]
+            destinationDirectory.set(file("$projectDir/build/classes/main"))
+        }
+        groovy {
+            srcDirs = [projectDir]
+            destinationDirectory.set(file("$projectDir/build/classes/main"))
+        }
     }
 }
-
-
-println("project dir ${projectDir}")
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: [])
@@ -125,22 +133,22 @@ task runScript(type: JavaExec) {
 
     classpath(sourceSets.main.compileClasspath)
     classpath(".")
-    println(classpath.toString())
+    println(classpath.asPath)
     main 'groovy.ui.GroovyMain'
-    args 'jp\\jamsketch\\main\\jamsketch.groovy'
+    args 'jp\\jamsketch\\main\\JamSketch.groovy'
 }
 
 task printEnv {
-    println(sourceSets.main.compileClasspath.files)
+    println(sourceSets.main.output.asPath)
+//    println(sourceSets.main.compileClasspath.files)
 }
-
 
 jar {
     //Exclude the duplicate dependencies.
-   duplicatesStrategy=DuplicatesStrategy.EXCLUDE
+    duplicatesStrategy=DuplicatesStrategy.EXCLUDE
 
-   //Specify the main class for manifest file.
-   manifest {
+    //Specify the main class for manifest file.
+    manifest {
         attributes "Main-Class" : "jp.jamsketch.main.jamsketch"
     }
 
@@ -149,9 +157,9 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 
-     //include some file from projectDir to Jar file.
+    //include some file from projectDir to Jar file.
     from(projectDir) {
-        //Specifying the files excluded from Jar file. 
+        //Specifying the files excluded from Jar file.
         exclude "*.java"
         exclude "*.groovy"
         exclude ".*"
@@ -175,4 +183,3 @@ launch4j {
     //Specify the jar task included in build.gradle.
     jarTask=project.tasks.jar
 }
-

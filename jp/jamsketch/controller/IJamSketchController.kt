@@ -1,34 +1,34 @@
 package jp.jamsketch.controller
 
-import jp.jamsketch.model.Point;
+import jp.jamsketch.model.Point
 
 /**
  * JamSketchの操作クラスのインターフェース
  */
-public interface IJamSketchController{
-
+interface IJamSketchController {
     /**
      * 初期化する
      */
-    public void init();
+    fun init()
 
-	/**
+    /**
      * Curveを更新する
+     *
      * @param from 始点
      * @param thru 終点
-     * @param y Y座標
+     * @param y    Y座標
      */
-    public void updateCurve(int from, int thru, int y);
+    fun updateCurve(from: Int, thru: Int, y: Int)
 
     /**
      * リセットする
      */
-    public void reset();
+    fun reset()
 
     /**
      * 仮実装
      */
-    public void addListener(JamMouseListener listener);
+    fun addListener(listener: JamMouseListener?)
 
-    def void mouseReleased(Point p);
+    fun mouseReleased(p: Point?)
 }

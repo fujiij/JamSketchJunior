@@ -17,5 +17,14 @@
   "tf_rest_col": 121,
   "tf_note_con_col_start": 60,
   "melody_generate_engine": "SimpleMelodyGenerateEngine",
-  "note_seq_generator": "SimpleNoteSeqGenerator"
+  "note_seq_generator": "SimpleNoteSeqGenerator",
+  "mode": "server",
+  "host": "192.168.11.4",
+  "port": 8181,
+  "how_in_advance": 1,
+  "keyboard_width": 100,
+  "channel_acc": 1,
+  "show_guide": false,
+  "melody_resetting": true,
+  "input_file_path": "./inputs/data.json"
 }
