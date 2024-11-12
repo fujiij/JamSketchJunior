@@ -54,7 +54,7 @@ class JamSketchServerController(host: String?, port: Int, private val innerContr
     fun resetClients() {
         val serviceLocator = ServiceLocator.GetInstance()
         val currentSession = serviceLocator.session
-        val sessions = currentSession.openSessions
+        val sessions = currentSession!!.openSessions
         for (session in sessions) {
             try {
                 session.basicRemote.sendText(ObjectMapper().writeValueAsString(ServerParameter("reset")))

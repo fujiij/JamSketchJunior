@@ -63,7 +63,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         val layout = BoxLayout(panel, BoxLayout.Y_AXIS)
         panel!!.layout = layout
         panel!!.add(JLabel("接続が切断されました。"))
-        val listner: JamSketchEventListner = JamSketchEventListnerImpl(panel)
+        val listner: JamSketchEventListner = JamSketchEventListnerImpl(panel!!)
 
         val melodyData = initData()
 
@@ -91,7 +91,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         }
 
         val serviceLocator = ServiceLocator.GetInstance()
-        serviceLocator.setContoller(controller)
+        serviceLocator.setContoller(controller!!)
 
         LunchInitFunction.create(this).setup()
         // add WindowListener (windowClosing) which calls exit();
@@ -105,7 +105,12 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
                 config.initial_blank_measures + config.num_of_measures)
 
         if (config.show_guide) guideData =
-            GuideData(config.midfilename, (width - config.keyboard_width), this)
+            GuideData(
+                config.midfilename,
+                (width - config.keyboard_width),
+                this,
+                config,
+            )
 
         fullMeasure = (dataModel.measureNum * config.repeat_times)
         tickPosition = 0
@@ -408,4 +413,12 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     }
 
     override val config = AccessibleConfig.config
+
+    // TODO: Temporally method
+    fun publicNotenum2y(nn: Double) : Double {
+        return this.notenum2y(nn)
+    }
+    fun publicBeat2x(measure: Int, beat: Double) : Double {
+        return this.beat2x(measure, beat)
+    }
 }

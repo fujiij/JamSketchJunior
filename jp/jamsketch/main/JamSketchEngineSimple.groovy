@@ -1,7 +1,6 @@
-package jp.jamsketch.main;
+package jp.jamsketch.main
 
-import jp.crestmuse.cmx.filewrappers.*
-import jp.jamsketch.main.*;
+import jp.jamsketch.model.melodygenerator.NoteSeqGenerator
 
 class JamSketchEngineSimple extends JamSketchEngineAbstract {
     

@@ -23,8 +23,10 @@
   "port": 8181,
   "how_in_advance": 1,
   "keyboard_width": 100,
+  "channel_guide": 2,
   "channel_acc": 1,
   "show_guide": false,
+  "guide_smoothness": 10,
   "melody_resetting": true,
-  "input_file_path": "./inputs/data.json"
+  "input_file_path": "./inputs/data.json",
 }

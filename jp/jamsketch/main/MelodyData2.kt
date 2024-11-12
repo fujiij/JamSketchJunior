@@ -3,6 +3,7 @@ package jp.jamsketch.main
 import groovy.lang.IntRange
 import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import jp.crestmuse.cmx.misc.PianoRoll
+import jp.crestmuse.cmx.processing.CMXApplet
 import jp.crestmuse.cmx.processing.CMXController
 import jp.jamsketch.config.Config
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
@@ -12,7 +13,7 @@ import java.util.stream.IntStream
 class MelodyData2(
     filename: String?,
     var width: Int,
-    cmxcontrol: CMXController,
+    cmxcontrol: CMXApplet,
     var pianoroll: PianoRoll,
     var cfg: Config
 ) {
