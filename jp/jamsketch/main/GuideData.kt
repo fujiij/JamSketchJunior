@@ -24,8 +24,7 @@ class GuideData(
 //        ) as Array<Int?> // 4 is temporary
         val beats = config.beats_per_measure
         val initial = config.initial_blank_measures
-        part.eachnote(object : Closure<Void?>(this, this) {
-            fun doCall(note: SCC.Note) {
+        part.noteList.forEach { note ->
                 try {
                     val y: Double = pianoroll.publicNotenum2y(note.notenum() - 0.5)
                     val onset: Int = (note.onset(480) / 480).toInt()
@@ -42,7 +41,6 @@ class GuideData(
                 } catch (e: UnsupportedOperationException) {
                 }
             }
-        })
         return smoothCurve(curve, smoothness)
     }
 

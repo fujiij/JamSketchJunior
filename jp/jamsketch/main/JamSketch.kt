@@ -28,6 +28,8 @@ import javax.swing.JPanel
 // TODO: Remove temporarily implemented interfaces(IConfigAccessible)
 class JamSketch : SimplePianoRoll(), IConfigAccessible {
 
+    override val config = AccessibleConfig.config
+
     /**
      * Role: Used for initial graphical settings such as window size and rendering mode.
      * Invocation Timing: Called first when the PApplet is initialized.
@@ -405,14 +407,13 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     var controller: IJamSketchController? = null
     var panel: JPanel? = null
 
-//    companion object {//        }
-////
-////    }
+//    companion object {
 //        @JvmStatic
 //        fun main(args: Array<String>) {
 //            start("jp.jamsketch.main.JamSketch")
+//        }
+//    }
 
-    override val config = AccessibleConfig.config
 
     // TODO: Temporally method
     fun publicNotenum2y(nn: Double) : Double {
@@ -424,5 +425,5 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
 }
 
 fun main() {
-    PApplet.main (arrayOf("jp.jamsketch.main.JamSketch"))
+    PApplet.runSketch(arrayOf("jp.jamsketch.main.JamSketch"), JamSketch())
 }

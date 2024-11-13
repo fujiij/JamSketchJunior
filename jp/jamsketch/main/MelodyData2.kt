@@ -53,7 +53,7 @@ class MelodyData2(
     var engine: JamSketchEngine? = null
     var curve1: Array<Int?>? = null
     var scc: SCC = CMXController.readSMFAsSCC(filename)
-    var pACKAGE_NAME: String = "jp.jamsketch.main"
+    var PACKAGE_NAME: String = "jp.jamsketch.main"
 
     init {
         scc.toDataSet().repeat(
@@ -65,7 +65,7 @@ class MelodyData2(
         val target_part: SCCDataSet.Part  = scc.toDataSet().getFirstPartWithChannel(1)
 
         try {
-            engine = ((Class.forName(pACKAGE_NAME + "." + cfg.jamsketch_engine).newInstance()) as JamSketchEngine)
+            engine = ((Class.forName(PACKAGE_NAME + "." + cfg.jamsketch_engine).newInstance()) as JamSketchEngine)
         } catch (e: InstantiationException) {
             throw RuntimeException(e)
         } catch (e: IllegalAccessException) {

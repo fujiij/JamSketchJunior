@@ -54,8 +54,8 @@ class NoteSeqGenerator(
                 val prev1 = prev(e_melo, 1, -1) as Int
                 val prev2 = prev(e_melo, 2, -1) as Int
                 val c = mr.getMusicElement(chordLayer, measure, tick).mostLikely as ChordSymbol2
-                val scores: MutableList<Double> = ArrayList()
-                val prevlist: MutableList<Int> = ArrayList()
+                val scores = mutableListOf<Double>()
+                val prevlist = mutableListOf<Int>()
 
                 for (i in 0 until tick) {
                     prevlist.add(

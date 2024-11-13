@@ -1,3 +1,4 @@
+
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.0.20'
     id 'groovy'
@@ -23,16 +24,19 @@ repositories {
 sourceSets {
     main {
         java {
-            srcDirs = [projectDir]
-            destinationDirectory.set(file("$projectDir/build/classes/main"))
+            srcDirs(projectDir)
+//            destinationDirectory.set(file("$buildDir/classes/main"))
         }
         kotlin {
-            srcDirs = [projectDir]
-            destinationDirectory.set(file("$projectDir/build/classes/main"))
+            srcDirs(projectDir)
+//            destinationDirectory.set(file("$buildDir/classes/main"))
         }
         groovy {
-            srcDirs = [projectDir]
-            destinationDirectory.set(file("$projectDir/build/classes/main"))
+            srcDirs(projectDir)
+//            destinationDirectory.set(file("$buildDir/classes/main"))
+        }
+        resources {
+            srcDirs("${projectDir}/resources")
         }
     }
 }
@@ -120,7 +124,14 @@ dependencies {
 
 }
 
-compileJava.options.encoding = "UTF-8"
+compileJava {
+    options.encoding = "UTF-8"
+}
+
+compileKotlin {
+    configure { inputs.property "resources", sourceSets.main.resources.srcDirs }
+    dependsOn(processResources)
+}
 
 application {
     // Define the main class for the application.
@@ -139,8 +150,14 @@ task runScript(type: JavaExec) {
 }
 
 task printEnv {
-    println(sourceSets.main.output.asPath)
-//    println(sourceSets.main.compileClasspath.files)
+    println(projectDir)
+    println(sourceSets.main.resources.srcDirs)
+    println("compileGroovy.classpath.asPath = ${compileGroovy.classpath.asPath}")
+    println("sourceSets.main.output.asPath = ${sourceSets.main.output.asPath}")
+    println("compileGroovy.destinationDirectory = ${compileGroovy.destinationDirectory.asFileTree.asPath}")
+    println("compileKotlin.destinationDirectory = ${compileKotlin.destinationDirectory.asFileTree.asPath}")
+//    compileKotlin.setPluginClasspath(compileGroovy.destinationDirectory.asFileTree)
+//    println("compileKotlin.pluginClasspath = ${compileKotlin.pluginClasspath.asFileTree.asPath}")
 }
 
 jar {
@@ -182,4 +199,37 @@ launch4j {
 
     //Specify the jar task included in build.gradle.
     jarTask=project.tasks.jar
+}
+
+// TODO: Delete after migrating to Kotlin
+task compileSpecificGroovyFile(type: GroovyCompile) {
+    source = fileTree("$projectDir/jp/jamsketch/util") {
+        include("**/*.groovy")
+    }
+    source += fileTree("$projectDir/jp/jamsketch/controller") {
+        include("**/*.groovy")
+    }
+    source += fileTree("$projectDir/jp/jamsketch/model") {
+        include("**/*.groovy")
+        exclude("LunchInitFunction.groovy")
+    }
+    source += fileTree("$projectDir/jp/jamsketch/model/engine") {
+        include("**/*.groovy")
+    }
+    source += fileTree("$projectDir/jp/jamsketch/model/melodygenerator") {
+        include("**/*.groovy")
+    }
+    source += fileTree("$projectDir/jp/jamsketch/main") {
+        include("**/*.groovy")
+    }
+    source += fileTree("$projectDir/jp/jamsketch/view") {
+        include("**/*.groovy")
+    }
+    source += fileTree("$projectDir/jp/jamsketch/web") {
+        include("**/*.groovy")
+    }
+
+//    destinationDirectory.set(file("$projectDir/build/classes/main"))
+    destinationDirectory.set(file(compileGroovy.destinationDirectory))
+    classpath = configurations.compileClasspath
 }

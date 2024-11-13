@@ -22,12 +22,12 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         model = mapper.readValue(jsonFile)
         cmx = CMXController.getInstance()
         CMXController.createMusicRepresentation(cfg.num_of_measures, cfg.division).also { this.mr = it }
-        mr!!.addMusicLayerCont(OUTLINE_LAYER)
+        mr.addMusicLayerCont(OUTLINE_LAYER)
         // mr.addMusicLayer(MELODY_LAYER, (0..11) as int[])
-        mr!!.addMusicLayer(MELODY_LAYER, (0..11).toList())
-        mr!!.addMusicLayer(CHORD_LAYER, listOf<ChordSymbol2>(ChordSymbol2.C, ChordSymbol2.F, ChordSymbol2.G), cfg.division)
+        mr.addMusicLayer(MELODY_LAYER, (0..11).toList())
+        mr.addMusicLayer(CHORD_LAYER, listOf<ChordSymbol2>(ChordSymbol2.C, ChordSymbol2.F, ChordSymbol2.G), cfg.division)
         cfg.chordprog.forEachIndexed { index, chord ->
-            mr!!.getMusicElement(CHORD_LAYER, index, 0).setEvidence(chord)
+            mr.getMusicElement(CHORD_LAYER, index, 0).setEvidence(chord)
         }
         // if (cfg.EXPRESSION) {
         //    expgen = new ExpressionGenerator()
@@ -35,10 +35,10 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         //           getFullChordProgression(), cfg.BEATS_PER_MEASURE)
         // }
         val sccgen = SCCGenerator(target_part as SCCDataSet.Part, scc.division, OUTLINE_LAYER, expgen!!, cfg)
-        mr!!.addMusicCalculator(MELODY_LAYER, sccgen)
+        mr.addMusicCalculator(MELODY_LAYER, sccgen)
         val calc: MusicCalculator? = musicCalculatorForOutline()
         if (calc != null) {
-            mr!!.addMusicCalculator(OUTLINE_LAYER, calc)
+            mr.addMusicCalculator(OUTLINE_LAYER, calc)
         }
 
         init_local()
@@ -55,7 +55,7 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
     abstract fun musicCalculatorForOutline(): MusicCalculator?
 
     override fun setMelodicOutline(measure: Int, tick: Int, value: Double) {
-        val e = mr!!.getMusicElement(OUTLINE_LAYER, measure, tick)
+        val e = mr.getMusicElement(OUTLINE_LAYER, measure, tick)
         if (!automaticUpdate()) {
             e.suspendUpdate()
         }
@@ -64,7 +64,7 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
     }
 
     override fun getMelodicOutline(measure: Int, tick: Int): Double {
-        return ((mr!!.getMusicElement(OUTLINE_LAYER, measure, tick).mostLikely) as Double)
+        return ((mr.getMusicElement(OUTLINE_LAYER, measure, tick).mostLikely) as Double)
     }
 
     abstract fun outlineUpdated(measure: Int, tick: Int)
@@ -74,7 +74,7 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
     override fun resetMelodicOutline() {
         (0..cfg!!.num_of_measures-1).forEach { i ->
             (0..cfg!!.division-1).forEach { j ->
-                mr!!.getMusicElement(OUTLINE_LAYER, i, j).
+                mr.getMusicElement(OUTLINE_LAYER, i, j).
                 setEvidence(Double.NaN)
             }
         }
@@ -85,10 +85,10 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
     }
 
     override fun getChord(measure: Int, tick: Int): ChordSymbol2? {
-        return ((mr!!.getMusicElement(CHORD_LAYER, measure, tick).mostLikely) as ChordSymbol2)
+        return ((mr.getMusicElement(CHORD_LAYER, measure, tick).mostLikely) as ChordSymbol2)
     }
 
-    var mr: MusicRepresentation? = null
+    lateinit var mr: MusicRepresentation
     var cmx: CMXController? = null
     var cfg: Config? = null
     var model: MutableMap<String, Any?>? = null
