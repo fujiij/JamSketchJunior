@@ -30,7 +30,7 @@ class SimpleNoteSeqGenerator(
     private val trigram: Map<String, List<Double>> = model["trigram"] as Map<String, List<Double>>
     private val bigram: List<List<Double>> = model["bigram"] as List<List<Double>>
     private val chord_beat_dur_unigram: Map<String, List<Double>> = model["chord_beat_dur_unigram"] as Map<String, List<Double>>
-    private val entropy_mean: Double = model["entropy.mean"] as Double
+    private val entropy_mean: Double = (model["entropy"] as LinkedHashMap<*,*>).get("mean") as Double
 
     override fun generateMusicDataFromCurveData(curveData: CurveData, engine: IMelodyGenerateEngine): MelodyData {
         TODO("Not yet implemented")

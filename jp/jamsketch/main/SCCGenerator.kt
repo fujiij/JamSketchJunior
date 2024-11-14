@@ -13,7 +13,7 @@ class SCCGenerator(
     var target_part: SCCDataSet.Part,
     var sccdiv: Int,
     var curveLayer: String,
-    var expgen: Any,
+    var expgen: Any?,
     var cfg: Config
 ) : MusicCalculator {
     override fun updated(measure: Int, tick: Int, layer: String, mr: MusicRepresentation) {

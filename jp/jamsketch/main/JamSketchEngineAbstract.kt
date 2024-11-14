@@ -18,15 +18,18 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         this.scc = scc
         this.cfg = cfg
         val mapper = jacksonObjectMapper()
-        val jsonFile = File(cfg.model_file)
+        val jsonFile = File(javaClass.getResource("/${cfg.model_file}").path)
         model = mapper.readValue(jsonFile)
         cmx = CMXController.getInstance()
-        CMXController.createMusicRepresentation(cfg.num_of_measures, cfg.division).also { this.mr = it }
+        this.mr = CMXController.createMusicRepresentation(cfg.num_of_measures, cfg.division)
         mr.addMusicLayerCont(OUTLINE_LAYER)
         // mr.addMusicLayer(MELODY_LAYER, (0..11) as int[])
         mr.addMusicLayer(MELODY_LAYER, (0..11).toList())
-        mr.addMusicLayer(CHORD_LAYER, listOf<ChordSymbol2>(ChordSymbol2.C, ChordSymbol2.F, ChordSymbol2.G), cfg.division)
-        cfg.chordprog.forEachIndexed { index, chord ->
+        mr.addMusicLayer(
+            CHORD_LAYER,
+            listOf<ChordSymbol2>(ChordSymbol2.C, ChordSymbol2.F, ChordSymbol2.G),
+            cfg.division)
+        cfg.chord_symbols.forEachIndexed { index, chord ->
             mr.getMusicElement(CHORD_LAYER, index, 0).setEvidence(chord)
         }
         // if (cfg.EXPRESSION) {
@@ -34,7 +37,7 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         //    expgen.start(scc.getFirstPartWithChannel(1),
         //           getFullChordProgression(), cfg.BEATS_PER_MEASURE)
         // }
-        val sccgen = SCCGenerator(target_part as SCCDataSet.Part, scc.division, OUTLINE_LAYER, expgen!!, cfg)
+        val sccgen = SCCGenerator(target_part as SCCDataSet.Part, scc.division, OUTLINE_LAYER, expgen, cfg)
         mr.addMusicCalculator(MELODY_LAYER, sccgen)
         val calc: MusicCalculator? = musicCalculatorForOutline()
         if (calc != null) {
