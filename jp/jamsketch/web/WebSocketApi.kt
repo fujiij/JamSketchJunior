@@ -46,7 +46,7 @@ class WebSocketApi {
             val info = mapper.readValue(message, ClientParameter::class.java)
 
             // 操作クラスを使って楽譜データを更新する
-            controller!!.updateCurve(info.from, info.thru, info.y)
+            controller!!.updateCurve(info.from, info.thru, info.y, info.nn)
         } catch (e: Exception) {
             // 例外をコンソールに出力する
             println(e)

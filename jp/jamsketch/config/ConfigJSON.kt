@@ -26,6 +26,8 @@ open class ConfigJSON(
     var host: String = "",
     var port: Int = 0,
     var how_in_advance: Int = 0,
+    var view_width: Int = 0,
+    var view_height: Int = 0,
     var keyboard_width: Int = 0,
     var channel_guide: Int = 0,
     var channel_acc: Int = 0,

@@ -29,13 +29,22 @@ class JamSketchClientController(
      * @param from 始点
      * @param thru 終点
      * @param y    Y座標
+     * @param nn   note number（Y座標をnote numberに変換した値）
      */
-    override fun updateCurve(from: Int, thru: Int, y: Int) {
+    override fun updateCurve(from: Int, thru: Int, y: Int, nn: Double) {
         // 内部で持つ操作クラスで更新操作をする
-        innerController.updateCurve(from, thru, y)
+        innerController.updateCurve(from, thru, y, nn)
 
         // WebSocketで更新情報をサーバーに送る
-        webSocketClient.Send(ClientParameter(from, thru, y))
+        webSocketClient.Send(ClientParameter(from, thru, y, nn))
+    }
+
+    override fun storeCursorPosition(i: Int, y: Int) {
+        innerController.storeCursorPosition(i, y)
+    }
+
+    override fun setMelodicOutline(measure: Int, tick: Int, value: Double) {
+        innerController.setMelodicOutline(measure, tick, value)
     }
 
     /**

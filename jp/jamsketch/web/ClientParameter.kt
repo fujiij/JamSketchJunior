@@ -17,13 +17,15 @@ class ClientParameter {
      * @param thru 終点
      * @param y    Y座標
      */
-    constructor(from: Int, thru: Int, y: Int) {
+    constructor(from: Int, thru: Int, y: Int, nn: Double) {
         this.from = from
         this.thru = thru
         this.y = y
+        this.nn = nn
     }
 
     var from: Int = 0
     var thru: Int = 0
     var y: Int = 0
+    var nn: Double = 0.0
 }

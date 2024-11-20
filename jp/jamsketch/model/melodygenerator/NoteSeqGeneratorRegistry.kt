@@ -5,9 +5,9 @@ object NoteSeqGeneratorRegistry {
     lateinit var noteSeqGenerators: MutableMap<String, Lazy<AbstractNoteSeqGenerator>>
 
     init {
-        noteSeqGenerators[SimpleNoteSeqGenerator::class.simpleName.toString()] =
+        noteSeqGenerators[NoteSeqGeneratorSimple::class.simpleName.toString()] =
             lazy {
-                SimpleNoteSeqGenerator()
+                NoteSeqGeneratorSimple()
             }
     }
 }

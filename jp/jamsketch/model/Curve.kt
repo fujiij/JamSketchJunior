@@ -1,6 +1,5 @@
 package jp.jamsketch.model
 
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.Consumer
 
@@ -31,7 +30,7 @@ class Curve(endUpdateCurveAction: Consumer<CurveData>) : Runnable {
             try {
                 Thread.sleep(10)
             } catch (e: Exception) {
-                DefaultGroovyMethods.println(this, "OWATA")
+                println("OWATA")
             }
         }
     }

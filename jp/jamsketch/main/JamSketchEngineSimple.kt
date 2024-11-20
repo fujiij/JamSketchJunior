@@ -1,18 +1,18 @@
 package jp.jamsketch.main
 
 import jp.crestmuse.cmx.inference.MusicCalculator
-import jp.jamsketch.model.melodygenerator.SimpleNoteSeqGenerator
+import jp.jamsketch.model.melodygenerator.NoteSeqGeneratorSimple
 
 class JamSketchEngineSimple : JamSketchEngineAbstract() {
 
     override fun musicCalculatorForOutline(): MusicCalculator? {
         var noteSeqGenerator =
-            SimpleNoteSeqGenerator(
+            NoteSeqGeneratorSimple(
                 noteLayer = MELODY_LAYER,
                 chordLayer = CHORD_LAYER,
                 beatsPerMeas = cfg!!.beats_per_measure,
                 entropy_bias = cfg!!.ent_bias,
-                model = model!!)
+                modelPath = cfg!!.model_file)
         return noteSeqGenerator
     }
 

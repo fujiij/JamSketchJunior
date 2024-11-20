@@ -1,36 +1,53 @@
 package jp.jamsketch.model.melodygenerator
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import jp.crestmuse.cmx.inference.MusicCalculator
 import jp.crestmuse.cmx.inference.MusicElement
 import jp.crestmuse.cmx.inference.MusicRepresentation
 import jp.crestmuse.cmx.misc.ChordSymbol2
-import jp.jamsketch.main.JamSketchEngineAbstract
 import jp.jamsketch.model.CurveData
 import jp.jamsketch.model.MelodyData
 import jp.jamsketch.model.engine.IMelodyGenerateEngine
+import java.io.File
 
 /**
  * This class uses a trigram or bigram model to select notes and generate melodies.
  * Calculate rhythm and note scores based on a given outline or chord progression to generate the optimal melody.
  */
-class SimpleNoteSeqGenerator(
+class NoteSeqGeneratorSimple(
     private val noteLayer: String = "",
     private val chordLayer: String = "",
     private val beatsPerMeas: Int = 0,
+    private val modelPath: String = "",
     private val entropy_bias: Double = 0.0,
-    private val RHYTHM_WEIGHTS: List<Double> = listOf(1.0, 0.2, 0.4, 0.8, 0.2, 0.4, 1.0, 0.2, 0.4, 0.8, 0.2, 0.4),
     private val w1: Double = 0.5,
     private val w2: Double = 0.8,
     private val w3: Double = 1.2,
     private val w4: Double = 2.0,
-    private val model: Map<String, Any?> = mapOf(),
-    private val RHYTHM_THRS: Double = 0.1,
+    private val rhythm_weights: List<Double> = listOf(1.0, 0.2, 0.4, 0.8, 0.2, 0.4, 1.0, 0.2, 0.4, 0.8, 0.2, 0.4),
+    private val rhythm_thrs: Double = 0.1,
 ): AbstractNoteSeqGenerator(), MusicCalculator {
 
-    private val trigram: Map<String, List<Double>> = model["trigram"] as Map<String, List<Double>>
-    private val bigram: List<List<Double>> = model["bigram"] as List<List<Double>>
-    private val chord_beat_dur_unigram: Map<String, List<Double>> = model["chord_beat_dur_unigram"] as Map<String, List<Double>>
-    private val entropy_mean: Double = (model["entropy"] as LinkedHashMap<*,*>).get("mean") as Double
+    private var trigram: Map<String, List<Double>>
+    private var bigram: List<List<Double>>
+    private var chord_beat_dur_unigram: Map<String, List<Double>>
+    private var entropy_mean: Double
+    lateinit var model: MutableMap<String, Any?>
+
+    init {
+        initModel()
+        trigram = model["trigram"] as Map<String, List<Double>>
+        bigram = model["bigram"] as List<List<Double>>
+        chord_beat_dur_unigram = model["chord_beat_dur_unigram"] as Map<String, List<Double>>
+        entropy_mean = (model["entropy"] as LinkedHashMap<*,*>)["mean"] as Double
+    }
+
+    private fun initModel() {
+        val mapper = jacksonObjectMapper()
+        val jsonFile = File(javaClass.getResource("/${modelPath}").path)
+        model = mapper.readValue(jsonFile)
+    }
 
     override fun generateMusicDataFromCurveData(curveData: CurveData, engine: IMelodyGenerateEngine): MelodyData {
         TODO("Not yet implemented")
@@ -46,6 +63,7 @@ class SimpleNoteSeqGenerator(
 
     /**
      * Generate notes based on outlines.
+     * CMX calls back to this method.
      */
     override fun updated(measure: Int, tick: Int, layer: String, mr: MusicRepresentation) {
         val e_curve = mr.getMusicElement(layer, measure, tick)
@@ -57,7 +75,7 @@ class SimpleNoteSeqGenerator(
                 val prev1 = prev(e_melo, 1, -1) as Int
                 val prev2 = prev(e_melo, 2, -1) as Int
                 val c = mr.getMusicElement(chordLayer, measure, tick).mostLikely as ChordSymbol2
-                val scores: MutableList<Double> = ArrayList()
+                val scores: MutableList<Double?> = MutableList(12){null}
                 val prevlist: MutableList<Int> = ArrayList()
 
                 for (i in 0 until tick) {
@@ -76,7 +94,7 @@ class SimpleNoteSeqGenerator(
                     scores[i] = w1 * simil + w2 * logtrigram + w3 * logchord +
                             w4 * (-entdiff)
                 }
-                e_melo.setEvidence(argmax(scores))
+                e_melo.setEvidence(argmax(scores.toList() as List<Double>))
             }
         }
     }
@@ -84,8 +102,8 @@ class SimpleNoteSeqGenerator(
     private fun decideRhythm(value: Double, prev: Double, tick: Int, e: MusicElement, mr: MusicRepresentation): Boolean {
         e.setTiedFromPrevious(false)
         if (!value.isNaN() && !prev.isNaN()) {
-            val score = Math.abs(value - prev) * RHYTHM_WEIGHTS[tick]
-            if (score < RHYTHM_THRS) {
+            val score = Math.abs(value - prev) * rhythm_weights[tick]
+            if (score < rhythm_thrs) {
                 e.setTiedFromPrevious(true)
                 return true
             }

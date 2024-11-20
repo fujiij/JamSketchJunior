@@ -1,7 +1,5 @@
 package jp.jamsketch.main
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import jp.crestmuse.cmx.filewrappers.SCC
 import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import jp.crestmuse.cmx.inference.MusicCalculator
@@ -10,28 +8,15 @@ import jp.crestmuse.cmx.misc.ChordSymbol2
 import jp.crestmuse.cmx.misc.ChordSymbol2.NON_CHORD
 import jp.crestmuse.cmx.processing.CMXController
 import jp.jamsketch.config.Config
-import java.io.File
-import java.util.*
 
+// TODO: passing config is prohibited
 abstract class JamSketchEngineAbstract : JamSketchEngine {
     override fun init(scc: SCC, target_part: SCC.Part, cfg: Config) {
         this.scc = scc
         this.cfg = cfg
-        val mapper = jacksonObjectMapper()
-        val jsonFile = File(javaClass.getResource("/${cfg.model_file}").path)
-        model = mapper.readValue(jsonFile)
         cmx = CMXController.getInstance()
-        this.mr = CMXController.createMusicRepresentation(cfg.num_of_measures, cfg.division)
-        mr.addMusicLayerCont(OUTLINE_LAYER)
-        // mr.addMusicLayer(MELODY_LAYER, (0..11) as int[])
-        mr.addMusicLayer(MELODY_LAYER, (0..11).toList())
-        mr.addMusicLayer(
-            CHORD_LAYER,
-            listOf<ChordSymbol2>(ChordSymbol2.C, ChordSymbol2.F, ChordSymbol2.G),
-            cfg.division)
-        cfg.chord_symbols.forEachIndexed { index, chord ->
-            mr.getMusicElement(CHORD_LAYER, index, 0).setEvidence(chord)
-        }
+
+        initMusicRepresentation()
         // if (cfg.EXPRESSION) {
         //    expgen = new ExpressionGenerator()
         //    expgen.start(scc.getFirstPartWithChannel(1),
@@ -44,12 +29,26 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
             mr.addMusicCalculator(OUTLINE_LAYER, calc)
         }
 
-        init_local()
+        initLocal()
     }
 
-    fun init_local() {
+    fun initLocal() {
         // do nothing
     }
+
+    fun initMusicRepresentation() {
+        this.mr = CMXController.createMusicRepresentation(cfg!!.num_of_measures, cfg!!.division)
+        mr.addMusicLayerCont(OUTLINE_LAYER)
+        mr.addMusicLayer(MELODY_LAYER, (0..11).toList())
+        mr.addMusicLayer(
+            CHORD_LAYER,
+            listOf<ChordSymbol2>(ChordSymbol2.C, ChordSymbol2.F, ChordSymbol2.G),
+            cfg!!.division)
+        cfg!!.chordprog.forEachIndexed { index, chord ->
+            mr.getMusicElement(CHORD_LAYER, index, 0).setEvidence(ChordSymbol2.parse(chord))
+        }
+    }
+
 
     val fullChordProgression: Any
         get() = List(cfg!!.initial_blank_measures) { NON_CHORD } +
@@ -74,13 +73,17 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
 
     abstract fun automaticUpdate(): Boolean
 
-    override fun resetMelodicOutline() {
-        (0..cfg!!.num_of_measures-1).forEach { i ->
-            (0..cfg!!.division-1).forEach { j ->
-                mr.getMusicElement(OUTLINE_LAYER, i, j).
-                setEvidence(Double.NaN)
-            }
+    override fun initMelodicOutline() {
+        // TODO: Don't need to refer config?
+        mr.getMusicElementList(OUTLINE_LAYER).forEach { element ->
+            element.setEvidence(Double.NaN)
         }
+//        (0..cfg!!.num_of_measures-1).forEach { i ->
+//            (0..cfg!!.division-1).forEach { j ->
+//                mr.getMusicElement(OUTLINE_LAYER, i, j).
+//                setEvidence(Double.NaN)
+//            }
+//        }
     }
 
     override fun setFirstMeasure(num: Int) {
@@ -94,7 +97,6 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
     lateinit var mr: MusicRepresentation
     var cmx: CMXController? = null
     var cfg: Config? = null
-    var model: MutableMap<String, Any?>? = null
     var scc: SCC? = null
     var expgen: Any? = null
 

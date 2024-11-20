@@ -3,7 +3,6 @@ package jp.jamsketch.web
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.websocket.*
 import jp.jamsketch.main.JamSketchEventListner
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import java.net.URI
 
 /**
