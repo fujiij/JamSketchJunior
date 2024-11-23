@@ -15,7 +15,7 @@ class JamSketchController
      * コンストラクタ
      *
      * @param musicData 楽譜データ
-     * @param initData   初期化メソッド
+     * @param engine   JamSketchEngine
      */
     (
         private var musicData: MusicData,
@@ -57,8 +57,7 @@ class JamSketchController
                 storeCursorPosition(i, y)
 
                 // setEvidence (OUTLINE_LAYER)
-//                val nn: Double = y2notenum(musicData.curve1[i]!!.toDouble())
-                println("var nn: $nn curve1[ii] == ${musicData.curve1[i]}")
+                println("var nn: $nn curve1[$i] == ${musicData.curve1[i]}")
                 val position: Int = (i * size2 / curveSize)
                 if (position >= 0) {
                     setMelodicOutline((position / musicData.division), position % musicData.division, nn)
@@ -84,9 +83,14 @@ class JamSketchController
 //        this.melodyData = initData.get()
 
         this.musicData.initCurve()
-        engine.initMelodicOutline()
 
-        // need to reset pianoroll datamodel
+        // remove generated notes
+        val part = (this.musicData.scc.toDataSet()).getFirstPartWithChannel(musicData.channel_acc)
+        part.noteList.forEach { part.remove(it) }
+
+        this.engine.initMelodicOutline()
+        this.engine.setFirstMeasure(this.musicData.initial_blank_measures)
+
     }
 
     private val listeners = CopyOnWriteArrayList<JamMouseListener>()

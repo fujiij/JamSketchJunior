@@ -1,7 +1,5 @@
 package jp.jamsketch.main
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import controlP5.ControlP5
 import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import jp.crestmuse.cmx.processing.gui.SimplePianoRoll
@@ -12,13 +10,11 @@ import jp.jamsketch.controller.JamSketchClientController
 import jp.jamsketch.controller.JamSketchController
 import jp.jamsketch.controller.JamSketchServerController
 import jp.jamsketch.model.JamSketchModel
-import jp.jamsketch.model.LunchInitFunction
 import jp.jamsketch.model.Point
 import jp.jamsketch.util.Tick
 import jp.jamsketch.view.IDisplay
 import jp.jamsketch.web.ServiceLocator
 import processing.core.PApplet
-import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
 import javax.swing.BoxLayout
 import javax.swing.JLabel
@@ -33,25 +29,111 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
 
     override val config = AccessibleConfig.config
 
-    var guideData: GuideData? = initGuideData()
-    var musicData: MusicData = initData()
+    // TODO: Delete comment
+    //  fullMeasure -> totalMeasures
+    //  mCurrentMeasure -> currentMeasureInTotalMeasures
+    val totalMeasures: Int = config.num_of_measures * config.repeat_times
+    val timelineWidth: Int = config.view_width - config.keyboard_width
+    private var currentMeasureInTotalMeasures = 0   // TODO: わかりやすい変数名にしたが、もっと短くしたい
+
+    var musicData: MusicData =
+        MusicData(
+            config.midfilename,
+            timelineWidth,
+            config.initial_blank_measures,
+            config.beats_per_measure,
+            config.num_of_measures,
+            config.repeat_times,
+            config.division,
+            config.channel_acc,
+        )
+    var engine: JamSketchEngine = ((Class.forName(PACKAGE_NAME + "." + config.jamsketch_engine).newInstance()) as JamSketchEngine)
+    var controller: IJamSketchController? = null
+
+    var guideData: GuideData? =
+        if (config.show_guide) {
+            GuideData(
+                config.midfilename,
+                timelineWidth,
+                config.initial_blank_measures,
+                config.beats_per_measure,
+                config.guide_smoothness,
+                config.channel_guide,
+                this::notenum2y,
+                this::beat2x,
+            )
+        } else {
+            null
+        }
+
+    var nowDrawing: Boolean = false
+    var username: String = ""
+    var panel: JPanel
+
     var model: JamSketchModel? = null
     var displays: CopyOnWriteArrayList<IDisplay> = CopyOnWriteArrayList()
     var ticker: CopyOnWriteArrayList<Tick> = CopyOnWriteArrayList()
-    var nowDrawing: Boolean = false
-    var username: String = ""
-    var fullMeasure: Int = 0
-    private var mCurrentMeasure = 0
-    var debugModeDraw: Int = 0
-    var controller: IJamSketchController? = null
-    var panel: JPanel? = null
-    var engine: JamSketchEngine = ((Class.forName(PACKAGE_NAME + "." + config.jamsketch_engine).newInstance()) as JamSketchEngine)
 
     init {
         val target_part: SCCDataSet.Part  = musicData.scc.toDataSet().getFirstPartWithChannel(config.channel_acc)
         engine.init(musicData.scc, target_part, config)
-//        melodyData.resetCurve()
         engine.initMelodicOutline()
+        engine.setFirstMeasure(config.initial_blank_measures)
+
+        // TODO: delete comment
+        //  initData() から移動。読込は一度だけで良いはず。
+        smfread((musicData.scc as SCCDataSet).midiSequence)
+
+
+        // TODO: Delete comments
+        // 20241118 add ++++++++++
+        // initData() で行われていた処理を移動している
+        initPianoRollDataModel((musicData.scc as SCCDataSet).getFirstPartWithChannel(config.channel_acc))
+        initMusicPlayer()
+        // 20241118 add ----------
+
+        // 20241122 setup() から移動
+        // setup() はsketchの初期化のみとするため
+        // A dialogue for JamSketchEventListener
+        panel = JPanel()
+        val layout = BoxLayout(panel, BoxLayout.Y_AXIS)
+        panel.layout = layout
+        panel.add(JLabel("The connection is lost."))
+
+        val listener: JamSketchEventListener = JamSketchEventListenerImpl(panel)
+
+        // JamSketch操作クラスを初期化
+        val origController = JamSketchController(
+            musicData,
+            engine,
+//            this::initData
+        )
+
+        controller = if (config.mode == "server") {
+            // サーバーで動かす場合に使う操作クラスを設定
+            JamSketchServerController(
+                config.host,
+                config.port,
+                origController
+            )
+        } else if (config.mode == "client") {
+            // クライアントで動かす場合に使う操作クラスを設定
+            JamSketchClientController(
+                config.host,
+                config.port,
+                origController,
+                listener
+            )
+        } else {
+            // スタンドアロンで動かす場合はそのまま
+            origController
+        }
+
+        val serviceLocator = ServiceLocator.GetInstance()
+        serviceLocator.setContoller(controller!!)
+
+        // ?
+//        LunchInitFunction.create(this).setup()
     }
 
     /**
@@ -75,82 +157,23 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     override fun setup() {
         super.setup()
         showMidiOutChooser()
-        val p5ctrl = ControlP5(this)
 
-        if (config.mode.equals("client")) {
+        // ControlP5 GUI components
+        val p5ctrl = ControlP5(this)
+        if (config.mode == "client") {
             p5ctrl.addButton("reconnect").setLabel("Reconnect").setPosition(20f, 645f).setSize(120, 40)
         } else {
             p5ctrl.addButton("startMusic").setLabel("Start / Stop").setPosition(20f, 645f).setSize(120, 40)
             p5ctrl.addButton("loadCurve").setLabel("Load").setPosition(300f, 645f).setSize(120, 40)
         }
-
         p5ctrl.addButton("resetMusic").setLabel("Reset").setPosition(160f, 645f).setSize(120, 40)
 
-        panel = JPanel()
-        val layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-        panel!!.layout = layout
-        panel!!.add(JLabel("接続が切断されました。"))
-        val listner: JamSketchEventListner = JamSketchEventListnerImpl(panel!!)
-
-        // 20241118 add ++++++++++
-        // initData() で行われていた処理を移動している
-        smfread((musicData.scc as SCCDataSet).midiSequence)
-        initPianoRollDataModel((musicData.scc as SCCDataSet).getFirstPartWithChannel(config.channel_acc))
-        fullMeasure = (dataModel.measureNum * config.repeat_times)
-        tickPosition = 0
-        // 20241118 add ----------
-
-        // JamSketch操作クラスを初期化
-        val origController = JamSketchController(
-            musicData,
-            engine,
-//            this::initData
-        )
-
-        controller = if (config.mode.equals("server")) {
-            // サーバーで動かす場合に使う操作クラスを設定
-            JamSketchServerController(
-                config.host,
-                config.port,
-                origController
-            )
-        } else if (config.mode.equals("client")) {
-            // クライアントで動かす場合に使う操作クラスを設定
-            JamSketchClientController(
-                config.host,
-                config.port,
-                origController,
-                listner
-            )
-        } else {
-            // スタンドアロンで動かす場合はそのまま
-            origController
-        }
-
-        val serviceLocator = ServiceLocator.GetInstance()
-        serviceLocator.setContoller(controller!!)
-
-        LunchInitFunction.create(this).setup()
         // add WindowListener (windowClosing) which calls exit();
     }
 
-    fun initData(): MusicData {
-        val myMelodyData = MusicData(
-            filename =  config.midfilename,
-            width = (config.view_width - config.keyboard_width),
-            initial_blank_measures = config.initial_blank_measures,
-            beats_per_measure = config.beats_per_measure,
-            num_of_measures = config.num_of_measures,
-            repeat_times = config.repeat_times,
-            division = config.division,
-        )
-
-        // 初期化済みオブジェクトを返す
-        return myMelodyData
-    }
-
-    private fun initGeneratedPart(part: SCCDataSet.Part) {
-        part.noteList.forEach { part.remove(it) }
+    private fun initMusicPlayer() {
+        // ((SMFPlayer)this.musicPlayer[i]).setTickPosition(tick);
+        tickPosition = 0
     }
 
     private fun initPianoRollDataModel(part: SCCDataSet.Part) {
@@ -159,26 +182,14 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         dataModel.firstMeasure = config.initial_blank_measures
     }
 
-    fun initGuideData(): GuideData? {
-        return if (config.show_guide) {
-            GuideData(
-                config.midfilename,
-                (width - config.keyboard_width),
-                this,
-                config,
-            )
-        } else {
-            null
-        }
-    }
-
     override fun draw() {
         super.draw()
+
         if (guideData != null) drawGuideCurve()
+
         if (config.forced_progress) {
             mouseX = beat2x(currentMeasure + config.how_in_advance, currentBeat).toInt()
         }
-
 
         if (pmouseX < mouseX && mouseX > beat2x(currentMeasure, currentBeat) + 10) {
             if (isUpdatable) {
@@ -186,14 +197,12 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             }
         }
 
-
         for (d in displays) {
             d.display(this)
         }
 
-
         if (currentMeasure.equals(config.num_of_measures - config.num_of_reset_ahead)) processLastMeasure()
-        engine.setFirstMeasure(dataModel.firstMeasure)
+
         enhanceCursor()
         drawProgress()
 
@@ -224,13 +233,14 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             )
         }
 
-        // test
-        val p = Point(mouseX, mouseY)
-        model!!.curve.updateCurve(p)
+        // test JamSketchModel
+//        val p = Point(mouseX, mouseY)
+//        model!!.curve.updateCurve(p)
     }
 
     // 20241118 moved from MelodyData2
-    private fun updateCurve(from: Int, thru: Int) {
+    // Called only from Guided (Temporally method)
+    private fun updateCurveLocal(from: Int, thru: Int) {
         val nMeas = config.num_of_measures
         val div = config.division
         val size2 = nMeas * div
@@ -246,7 +256,6 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             }
         }
     }
-
 
     val isUpdatable: Boolean
         get() {
@@ -264,17 +273,35 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             }
         }
 
+    /**
+     * The process to be performed in the last measure on the screen
+     */
     fun processLastMeasure() {
         makeLog("melody")
+        // TODO: melody_resetting の意味を確認
         if (config.melody_resetting) {
-            if (mCurrentMeasure < (fullMeasure - config.num_of_reset_ahead)) dataModel.shiftMeasure(config.num_of_measures)
+            if (currentMeasureInTotalMeasures < (totalMeasures - config.num_of_reset_ahead)) {
+                dataModel.shiftMeasure(config.num_of_measures)
+            }
             musicData.initCurve()
+
+            // for Guided
             if (guideData != null) guideData!!.shiftCurve()
 
             if (controller is JamSketchServerController) {
                 (controller as JamSketchServerController).resetClients()
             }
         }
+
+        // 20241121 add
+        // the case when playing up to totalMeasures
+        if (currentMeasureInTotalMeasures >= totalMeasures) {
+            // 生成したメロディを残したまま再スタートするために、measureを戻す
+            dataModel.firstMeasure = config.initial_blank_measures
+        }
+
+        // SCCGenerator.firstMeasure = num
+        engine.setFirstMeasure(dataModel.firstMeasure)
     }
 
     fun enhanceCursor() {
@@ -286,13 +313,17 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
 
     fun drawProgress() {
         if (isNowPlaying) {
-            val dataModel = dataModel
-            mCurrentMeasure =
+            // currentMeasureInTotalMeasures    演奏全体での現在の小節番号
+            // currentMeasure                   ページ内の小節番号
+            // dataModel.firstMeasure           ページ開始位置
+            // initial_blank_measures           ページ開始位置のoffset
+            // +1                               0小節目ではなく1小節目とするために加算
+            currentMeasureInTotalMeasures =
                 (currentMeasure + dataModel.firstMeasure - config.initial_blank_measures + 1)
             val mtotal: Int = dataModel.measureNum * config.repeat_times
             textSize(32f)
             fill(0f, 0f, 0f)
-            text(mCurrentMeasure.toString() + " / " + mtotal, 460f, 675f)
+            text(currentMeasureInTotalMeasures.toString() + " / " + mtotal, 460f, 675f)
         }
     }
 
@@ -306,34 +337,33 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             stopMusic()
             makeLog("stop")
         } else {
+
             playMusic()
             makeLog("play")
         }
     }
 
     fun resetMusic() {
+
+        // TODO: controllerが操作する範囲を確認
+        //  startMusic() はcontrollerから操作していない
         // JamSketch操作クラスを使用してリセットする
         controller!!.reset()
-        tickPosition = 0
-        currentMeasure
+
+        // 元々resetMusic() で呼ばれていたもの
+        // initData() を渡すためにinitDataに入っていた
         makeLog("reset")
+        initMusicPlayer()
 
-        val part = (musicData.scc.toDataSet()).getFirstPartWithChannel(config.channel_acc)
+        // set new PianoRollDataModel to dataModel
+        initPianoRollDataModel((musicData.scc.toDataSet()).getFirstPartWithChannel(config.channel_acc))
 
-        // remove generated notes
-        initGeneratedPart(part)
-
-        // test
-        initPianoRollDataModel(part)
-
-        //
-        model!!.curve.clear()
+        // test JamSketchModel
+//        model!!.curve.clear()
     }
 
     public override fun musicStopped() {
         super.musicStopped()
-        //    if (microsecondPosition >= sequencer.getMicrosecondLength())
-//      resetMusic()
     }
 
     /**
@@ -343,107 +373,13 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         controller!!.init()
     }
 
-    fun makeLog(action: String) {
-// TODO:　20241118 java.io.FileNotFoundException: \output_Mon_Nov_18_10-18-23_GMT+09-00_2024_melody.mid (アクセスが拒否されました。)
-// MelodyData2リファクタ中のため、一時的にコメントアウト
-//        val logname = "output_" + (Date()).toString().replace(" ", "_").replace(":", "-")
-//        if (action == "melody") {
-//            val midname: String = config.log_dir + "/" + logname + "_melody.mid"
-//            (melodyData.scc as SCCDataSet).toWrapper().toMIDIXML().writefileAsSMF(midname)
-//            println("saved as $midname")
-//
-//            val sccname: String = config.log_dir + "/" + logname + "_melody.sccxml"
-//            (melodyData.scc as SCCDataSet).toWrapper().writefile(sccname)
-//            println("saved as $sccname")
-//
-//            val jsonname: String = config.log_dir + "/" + logname + "_curve.json"
-//            saveStrings(
-//                jsonname,
-//                arrayOf(jacksonObjectMapper().writeValueAsString(melodyData.curve1))
-//                )
-//            println("saved as $jsonname")
-//            val pngname: String = config.log_dir + "/" + logname + "_screenshot.png"
-//            save(pngname)
-//            println("saved as $pngname")
-//
-//            // for debug
-//            File("${config.log_dir.plus(File.separator).plus(logname)}_noteList.txt").writeText(
-//                (melodyData.scc as SCCDataSet).getFirstPartWithChannel(1).noteList.toString()
-//            )
-//            //      new File("${CFG.LOG_DIR}/${logname}_noteOnlyList.txt").text = (melodyData.scc as SCCDataSet).getFirstPartWithChannel(1).getNoteOnlyList().toString()
-//        } else {
-//            val txtname: String = config.log_dir.toString() + "/" + logname + "_" + action + ".txt"
-//            saveStrings(txtname, arrayOf(action))
-//            println("saved as $txtname")
-//        }
-    }
-
-    fun loadCurve() {
-        selectInput("Select a file to process:", "loadFileSelected")
-    }
-
-    fun loadFileSelected(selection: File?) {
-        if (selection == null) {
-            println("Window was closed or the user hit cancel.")
-        } else {
-            val absolutePath = selection.absolutePath
-            println("User selected $absolutePath")
-            if (absolutePath.endsWith(".json")) {
-                val objectMapper = jacksonObjectMapper()
-                musicData.curve1 = objectMapper.readValue(selection)
-                val count: Int = (musicData.curve1 as Array<*>).size
-//                melodyData.updateCurve(0, (width - config.keyboard_width) - debugModeDraw)
-                updateCurve(0, (width - config.keyboard_width) - debugModeDraw)
-            } else if (selection.canonicalPath.endsWith(".txt")) {
-                val table = loadTable(absolutePath, "csv")
-                musicData.curve1 = arrayOfNulls<Int>(width - debugModeDraw).toMutableList()
-                val n = table.rowCount
-                val m: Int = (musicData.curve1 as Array<Int>).size
-                for (i in IntRange(keyboardWidth.toInt(), (m - 1))) {
-                    val from = (i - keyboardWidth) as Int * n / m
-                    val thru = ((i + 1) - keyboardWidth) as Int * n / m - 1
-                    val range = (from..thru).toList()
-                    val collect = range.map { notenum2y(table.getFloat(it, 0) as Double) }
-                    val sum = collect.sum()
-                    (musicData.curve1 as Array<Int>)[i] = (sum / range.size).toInt()
-
-                }
-//                melodyData.updateCurve(0, (width - config.keyboard_width) - debugModeDraw)
-                updateCurve(0, (width - config.keyboard_width) - debugModeDraw)
-
-            } else {
-                println("File is not supported")
-                return
-            }
-        }
-    }
-
     override fun mousePressed() {
         nowDrawing = true
     }
 
     override fun mouseReleased() {
         nowDrawing = false
-
-        // TODO: mouseX = -1 の意味を確認
-
-// 20241118 とりあえずコメントアウト
-//        mouseX = -1
-
-// TODO: mouseX = -1ならば、isInsideはいつでもfalse。呼ぶ必要無し。
-// 20241118 とりあえずコメントアウト
-//        if (isInside(mouseX, mouseY)) {
-//            if ((melodyData.engine as JamSketchEngineAbstract).automaticUpdate() as Boolean) {
-//                (melodyData.engine as JamSketchEngineAbstract).outlineUpdated(
-//                    x2measure(mouseX.toDouble()) % config.num_of_reset_ahead,
-//                    config.division - 1
-//                )
-//            }
-//        }
         controller!!.mouseReleased(Point(mouseX, mouseY))
-    }
-
-    override fun mouseDragged() {
     }
 
     override fun keyReleased() {
@@ -458,54 +394,22 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         } else if (key.equals("b")) {
             isNoteVisible = !isNoteVisible
 //        } else if (key.equals("u")) {
-//            melodyData!!.updateCurve("all")
+//            musicData.updateCurve("all")
         }
     }
 
-    fun loadOutlineLayerData() {
-        val jsonFile: File = File(config.input_file_path)
-        val mapper = jacksonObjectMapper()
-        var jsonData : Array<Int> = mapper.readValue(jsonFile)
-        jsonData.forEachIndexed { index, value ->
-            (musicData.curve1 as Array<Int>)[index] = value
-        }
-//        melodyData.updateCurve(0, (width - config.keyboard_width))
-        updateCurve(0, (width - config.keyboard_width))
-    }
 
     override fun exit() {
         println("exit() called.")
         super.exit()
     }
 
-    fun isNowDrawing(): Boolean {
-        return nowDrawing
+    fun makeLog(action: String) {
+// リファクタリング中のため一時的にコメントアウト
+// \output_Thu_Nov_21_15-57-46_GMT+09-00_2024_melody.mid (アクセスが拒否されました。)
+//        makeLog(action, musicData, config.log_dir, this)
     }
 
-    fun getmCurrentMeasure(): Int {
-        return mCurrentMeasure
-    }
-
-    fun setmCurrentMeasure(mCurrentMeasure: Int) {
-        this.mCurrentMeasure = mCurrentMeasure
-    }
-
-
-//    companion object {
-//        @JvmStatic
-//        fun main(args: Array<String>) {
-//            start("jp.jamsketch.main.JamSketch")
-//        }
-//    }
-
-
-    // TODO: Temporally method
-    fun publicNotenum2y(nn: Double) : Double {
-        return this.notenum2y(nn)
-    }
-    fun publicBeat2x(measure: Int, beat: Double) : Double {
-        return this.beat2x(measure, beat)
-    }
 }
 
 fun main() {

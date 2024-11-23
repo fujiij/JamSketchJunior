@@ -1,6 +1,6 @@
 package jp.jamsketch.controller
 
-import jp.jamsketch.main.JamSketchEventListner
+import jp.jamsketch.main.JamSketchEventListener
 import jp.jamsketch.model.Point
 import jp.jamsketch.web.ClientParameter
 import jp.jamsketch.web.WebSocketClient
@@ -13,7 +13,7 @@ class JamSketchClientController(
     private val host: String,
     private val port: Int,
     private val innerController: IJamSketchController,
-    private val listner: JamSketchEventListner
+    private val listner: JamSketchEventListener
 ) :
     IJamSketchController {
     /**

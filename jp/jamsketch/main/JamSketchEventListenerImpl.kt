@@ -6,12 +6,12 @@ import javax.swing.JPanel
 /**
  * JamSketchのイベントリスナー
  */
-class JamSketchEventListnerImpl
+class JamSketchEventListenerImpl
 /**
  * コンストラクタ
  *
  * @param panel ダイアログ
- */(private val panel: JPanel) : JamSketchEventListner {
+ */(private val panel: JPanel) : JamSketchEventListener {
     /**
      * 切断された状態を通知する
      */

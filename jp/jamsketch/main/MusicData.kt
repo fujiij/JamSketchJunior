@@ -2,31 +2,30 @@ package jp.jamsketch.main
 
 import jp.crestmuse.cmx.filewrappers.SCC
 import jp.crestmuse.cmx.processing.CMXController
-import java.util.stream.IntStream
 
+/**
+ * 音楽生成の入出力データ
+ *
+ * @param filename                  伴奏ファイル名
+ * @param size                     カーブの座標を保持するリストのサイズ（タイムラインのwidth）
+ * @param initial_blank_measures
+ * @param beats_per_measure
+ * @param num_of_measures
+ * @param repeat_times
+ * @param division                  TODO: scc.division との違いを確認
+ */
 class MusicData(
     filename: String?,
-    var width: Int,
+    val size: Int,
     val initial_blank_measures: Int,
     val beats_per_measure: Int,
     val num_of_measures: Int,
     val repeat_times: Int,
     val division: Int,
+    val channel_acc: Int = 0,
 ) {
-    var curve1: MutableList<Int?> = arrayOfNulls<Int>(width).toMutableList()
-    var scc: SCC = CMXController.readSMFAsSCC(filename)
-
-    fun initCurve() {
-        curve1 = arrayOfNulls<Int>(width).toMutableList()
-    }
-
-    fun storeCursorPosition(from: Int, thru: Int, y: Int) {
-        IntStream.rangeClosed(from, thru).forEach { i: Int -> curve1[i] = y }
-    }
-
-    fun storeCursorPosition(i: Int, y: Int) {
-        curve1[i] = y
-    }
+    var curve1: MutableList<Int?> = arrayOfNulls<Int>(size).toMutableList()
+    var scc: SCC = CMXController.readSMFAsSCC(javaClass.getResource("/${filename}").path)
 
     init {
         scc.toDataSet().repeat(
@@ -34,6 +33,18 @@ class MusicData(
             ((initial_blank_measures + num_of_measures) * beats_per_measure * scc.division).toLong(),
             repeat_times - 1
         )
-
     }
+
+    fun initCurve() {
+        curve1 = arrayOfNulls<Int>(size).toMutableList()
+    }
+
+    fun storeCursorPosition(from: Int, thru: Int, y: Int) {
+        (from..thru).forEach { i: Int -> curve1[i] = y }
+    }
+
+    fun storeCursorPosition(i: Int, y: Int) {
+        curve1[i] = y
+    }
+
 }

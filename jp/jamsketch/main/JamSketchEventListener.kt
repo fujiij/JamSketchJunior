@@ -5,7 +5,7 @@ import java.util.*
 /**
  * JamSketchのイベントリスナー
  */
-interface JamSketchEventListner : EventListener {
+interface JamSketchEventListener : EventListener {
     /**
      * 切断された状態を通知する
      */

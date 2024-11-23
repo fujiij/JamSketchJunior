@@ -27,11 +27,12 @@
   "keyboard_width": 100,
   "channel_guide": 2,
   "channel_acc": 1,
-  "show_guide": false,
+  "show_guide": true,
   "guide_smoothness": 10,
   "melody_resetting": true,
   "input_file_path": "./inputs/data.json",
   "ent_bias": 0.0,
   "jamsketch_engine": "JamSketchEngineSimple",
-  "model_file": "model20180321.json"
+  "model_file": "model20180321.json",
+  "on_drag_only": true
 }

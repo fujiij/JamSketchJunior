@@ -4,6 +4,7 @@ import jp.crestmuse.cmx.filewrappers.SCCDataSet
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 class JamSketchEngineGuided : JamSketchEngineAbstract() {
+
     override fun musicCalculatorForOutline(): NoteSeqGeneratorGuided {
         val chGuide: Int = cfg!!.channel_guide
         val partGuide: SCCDataSet.Part = scc!!.toDataSet().getFirstPartWithChannel(chGuide)
