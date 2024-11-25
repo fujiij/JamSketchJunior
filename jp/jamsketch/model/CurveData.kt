@@ -1,6 +1,5 @@
 package jp.jamsketch.model
 
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 

@@ -1,7 +1,6 @@
 package jp.jamsketch.main
 
 import jp.crestmuse.cmx.filewrappers.SCCDataSet
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 class JamSketchEngineGuided : JamSketchEngineAbstract() {
 

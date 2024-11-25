@@ -47,62 +47,48 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             config.division,
             config.channel_acc,
         )
-    var engine: JamSketchEngine = ((Class.forName(PACKAGE_NAME + "." + config.jamsketch_engine).newInstance()) as JamSketchEngine)
+
+    var engine: JamSketchEngine = ((Class.forName(PACKAGE_NAME + "." + config.jamsketch_engine).getConstructor().newInstance()) as JamSketchEngine).let {
+        val target_part: SCCDataSet.Part  = musicData.scc.toDataSet().getFirstPartWithChannel(config.channel_acc)
+        it.init(musicData.scc, target_part, config)
+        it.initMelodicOutline()
+        it.setFirstMeasure(config.initial_blank_measures)
+        it
+    }
+
     var controller: IJamSketchController? = null
 
-    var guideData: GuideData? =
-        if (config.show_guide) {
-            GuideData(
-                config.midfilename,
-                timelineWidth,
-                config.initial_blank_measures,
-                config.beats_per_measure,
-                config.guide_smoothness,
-                config.channel_guide,
-                this::notenum2y,
-                this::beat2x,
-            )
-        } else {
-            null
-        }
+    var guideData: GuideData? = null
 
     var nowDrawing: Boolean = false
     var username: String = ""
-    var panel: JPanel
 
+    // A dialogue for JamSketchEventListener
+    var panel: JPanel  = JPanel().let {
+        val layout = BoxLayout(it, BoxLayout.Y_AXIS)
+        it.layout = layout
+        it.add(JLabel("The connection is lost."))
+        it
+    }
+
+    // new objects
     var model: JamSketchModel? = null
     var displays: CopyOnWriteArrayList<IDisplay> = CopyOnWriteArrayList()
     var ticker: CopyOnWriteArrayList<Tick> = CopyOnWriteArrayList()
 
     init {
-        val target_part: SCCDataSet.Part  = musicData.scc.toDataSet().getFirstPartWithChannel(config.channel_acc)
-        engine.init(musicData.scc, target_part, config)
-        engine.initMelodicOutline()
-        engine.setFirstMeasure(config.initial_blank_measures)
-
         // TODO: delete comment
         //  initData() から移動。読込は一度だけで良いはず。
         smfread((musicData.scc as SCCDataSet).midiSequence)
 
-
         // TODO: Delete comments
-        // 20241118 add ++++++++++
-        // initData() で行われていた処理を移動している
+        // 20241118 initData() で行われていた処理を移動している
         initPianoRollDataModel((musicData.scc as SCCDataSet).getFirstPartWithChannel(config.channel_acc))
         initMusicPlayer()
-        // 20241118 add ----------
 
-        // 20241122 setup() から移動
-        // setup() はsketchの初期化のみとするため
-        // A dialogue for JamSketchEventListener
-        panel = JPanel()
-        val layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-        panel.layout = layout
-        panel.add(JLabel("The connection is lost."))
-
+        // init controller
         val listener: JamSketchEventListener = JamSketchEventListenerImpl(panel)
-
-        // JamSketch操作クラスを初期化
+        //// JamSketch操作クラスを初期化
         val origController = JamSketchController(
             musicData,
             engine,
@@ -168,6 +154,28 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         }
         p5ctrl.addButton("resetMusic").setLabel("Reset").setPosition(160f, 645f).setSize(120, 40)
 
+        // init GuideData
+        // beat2x depends on dataModel & PApplet.width
+        // need to init after setDataModel (initPianoRollDataModel) & settings()
+        guideData =
+            if (config.show_guide) {
+                GuideData(
+                    config.midfilename,
+                    timelineWidth,
+                    config.initial_blank_measures,
+                    config.beats_per_measure,
+                    config.num_of_measures,
+                    config.repeat_times,
+                    config.guide_smoothness,
+                    config.channel_guide,
+                    config.keyboard_width,
+                    this::notenum2y,
+                    this::beat2x,
+                )
+            } else {
+                null
+            }
+
         // add WindowListener (windowClosing) which calls exit();
     }
 
@@ -185,39 +193,56 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     override fun draw() {
         super.draw()
 
-        if (guideData != null) drawGuideCurve()
-
+        // Manipulating mouseX
         if (config.forced_progress) {
             mouseX = beat2x(currentMeasure + config.how_in_advance, currentBeat).toInt()
         }
 
+        updateCurveDuringDraw()
+        drawBasicElements()
+        drawAdditionalElements()
+    }
+
+    private fun updateCurveDuringDraw() {
         if (pmouseX < mouseX && mouseX > beat2x(currentMeasure, currentBeat) + 10) {
             if (isUpdatable) {
                 updateCurve()
             }
         }
+    }
 
+    /**
+     * Draw basic visual elements
+     */
+    private fun drawBasicElements() {
+        // new object
         for (d in displays) {
             d.display(this)
         }
 
         if (currentMeasure.equals(config.num_of_measures - config.num_of_reset_ahead)) processLastMeasure()
-
         enhanceCursor()
         drawProgress()
+    }
 
+    /**
+     * Draw additional visual elements
+     */
+    private fun drawAdditionalElements() {
+        if (guideData != null) drawGuideCurve()
+
+        // new object
         for (t in ticker) t.tick()
     }
 
     fun drawGuideCurve() {
-        val xFrom = 100
         strokeWeight(3f)
         stroke(100f, 200f, 200f)
-        (0..<((guideData!!.curveGuideView as Array<*>).size -1)).forEach { i ->
-            if ((guideData!!.curveGuideView as Array<*>)[i] != null &&
-                (guideData!!.curveGuideView as Array<*>)[i+1] != null) {
-                line((i+xFrom) as Double, (guideData!!.curveGuideView as Array<*>)[i] as Double,
-                    (i+1+xFrom) as Double, (guideData!!.curveGuideView as Array<*>)[i+1] as Double)
+        (0 until (guideData!!.curveGuideView!!.size)).forEach { i ->
+            if (guideData!!.curveGuideView!![i] != null &&
+                guideData!!.curveGuideView!![i+1] != null) {
+                line((i + config.keyboard_width).toDouble(), guideData!!.curveGuideView!![i]!!.toDouble(),
+                    (i+ config.keyboard_width + 1).toDouble(), guideData!!.curveGuideView!![i+1]!!.toDouble())
             }
         }
     }
@@ -286,7 +311,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             musicData.initCurve()
 
             // for Guided
-            if (guideData != null) guideData!!.shiftCurve()
+            if (guideData != null) guideData!!.shiftCurveGuideView()
 
             if (controller is JamSketchServerController) {
                 (controller as JamSketchServerController).resetClients()
@@ -346,7 +371,6 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     fun resetMusic() {
 
         // TODO: controllerが操作する範囲を確認
-        //  startMusic() はcontrollerから操作していない
         // JamSketch操作クラスを使用してリセットする
         controller!!.reset()
 
@@ -358,7 +382,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         // set new PianoRollDataModel to dataModel
         initPianoRollDataModel((musicData.scc.toDataSet()).getFirstPartWithChannel(config.channel_acc))
 
-        // test JamSketchModel
+        // new object
 //        model!!.curve.clear()
     }
 
