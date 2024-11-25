@@ -190,6 +190,13 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         dataModel.firstMeasure = config.initial_blank_measures
     }
 
+    /**
+     * ----------
+     * Caution!
+     * ----------
+     * Don't write your draw() directly here.
+     * If you use JamSketch in your research and need to add your own features, write it in drawAdditionalElements().
+     */
     override fun draw() {
         super.draw()
 
