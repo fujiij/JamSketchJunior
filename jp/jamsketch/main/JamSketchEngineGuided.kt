@@ -7,7 +7,7 @@ class JamSketchEngineGuided : JamSketchEngineAbstract() {
     override fun initLocal() {
         // Do nothing
     }
-    
+
     override fun initMusicRepresentationLocal() {
         // Do nothing
     }
