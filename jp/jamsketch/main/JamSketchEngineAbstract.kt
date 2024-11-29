@@ -32,14 +32,13 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         initLocal()
     }
 
-    fun initLocal() {
-        // do nothing
-    }
+    abstract fun initMusicRepresentationLocal()
+    abstract fun initLocal()
 
     fun initMusicRepresentation() {
         this.mr = CMXController.createMusicRepresentation(cfg!!.num_of_measures, cfg!!.division)
         mr.addMusicLayerCont(OUTLINE_LAYER)
-        mr.addMusicLayer(MELODY_LAYER, (0..11).toList())
+
         mr.addMusicLayer(
             CHORD_LAYER,
             listOf<ChordSymbol2>(ChordSymbol2.C, ChordSymbol2.F, ChordSymbol2.G),
@@ -47,6 +46,9 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         cfg!!.chordprog.forEachIndexed { index, chord ->
             mr.getMusicElement(CHORD_LAYER, index, 0).setEvidence(ChordSymbol2.parse(chord))
         }
+
+        initMusicRepresentationLocal()
+
     }
 
 
@@ -73,11 +75,16 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
 
     abstract fun automaticUpdate(): Boolean
 
-    override fun initMelodicOutline() {
-        // TODO: Don't need to refer config?
+    override fun resetMelodicOutline() {
+        // TODO: need to refer config?
         mr.getMusicElementList(OUTLINE_LAYER).forEach { element ->
             element.setEvidence(Double.NaN)
         }
+
+        mr.getMusicElementList(MELODY_LAYER).forEach { element ->
+            element.setRest(true)
+        }
+
 //        (0..cfg!!.num_of_measures-1).forEach { i ->
 //            (0..cfg!!.division-1).forEach { j ->
 //                mr.getMusicElement(OUTLINE_LAYER, i, j).

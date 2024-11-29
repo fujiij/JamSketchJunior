@@ -15,5 +15,5 @@ interface JamSketchEngine {
 
     fun setFirstMeasure(number: Int)
 
-    fun initMelodicOutline()
+    fun resetMelodicOutline()
 }

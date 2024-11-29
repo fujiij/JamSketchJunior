@@ -35,7 +35,7 @@ class MusicData(
         )
     }
 
-    fun initCurve() {
+    fun resetCurve() {
         curve1 = arrayOfNulls<Int>(size).toMutableList()
     }
 

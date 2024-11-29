@@ -4,10 +4,18 @@ import jp.crestmuse.cmx.filewrappers.SCCDataSet
 
 class JamSketchEngineGuided : JamSketchEngineAbstract() {
 
-    override fun musicCalculatorForOutline(): NoteSeqGeneratorGuided {
+    override fun initLocal() {
+        // Do nothing
+    }
+    
+    override fun initMusicRepresentationLocal() {
+        // Do nothing
+    }
+
+    override fun musicCalculatorForOutline(): NoteSeqGeneratorSimpleGuided {
         val chGuide: Int = cfg!!.channel_guide
         val partGuide: SCCDataSet.Part = scc!!.toDataSet().getFirstPartWithChannel(chGuide)
-        return NoteSeqGeneratorGuided(
+        return NoteSeqGeneratorSimpleGuided(
             MELODY_LAYER,
             CHORD_LAYER,
             partGuide,

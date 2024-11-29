@@ -4,7 +4,6 @@ import jp.jamsketch.main.JamSketchEngine
 import jp.jamsketch.main.MusicData
 import jp.jamsketch.model.Point
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.function.Supplier
 
 /**
  * JamSketchの操作クラス
@@ -82,13 +81,13 @@ class JamSketchController
         // 本来は初期化処理をこちらに移植した方が理想であるが、初期化処理が画面の操作と絡まっているため、渡してきたメソッドをそのまま実行することで実現している
 //        this.melodyData = initData.get()
 
-        this.musicData.initCurve()
+        this.musicData.resetCurve()
 
         // remove generated notes
         val part = (this.musicData.scc.toDataSet()).getFirstPartWithChannel(musicData.channel_acc)
         part.noteList.forEach { part.remove(it) }
 
-        this.engine.initMelodicOutline()
+        this.engine.resetMelodicOutline()
         this.engine.setFirstMeasure(this.musicData.initial_blank_measures)
 
     }

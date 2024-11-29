@@ -51,7 +51,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     var engine: JamSketchEngine = ((Class.forName(PACKAGE_NAME + "." + config.jamsketch_engine).getConstructor().newInstance()) as JamSketchEngine).let {
         val target_part: SCCDataSet.Part  = musicData.scc.toDataSet().getFirstPartWithChannel(config.channel_acc)
         it.init(musicData.scc, target_part, config)
-        it.initMelodicOutline()
+        it.resetMelodicOutline()
         it.setFirstMeasure(config.initial_blank_measures)
         it
     }
@@ -79,6 +79,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     init {
         // TODO: delete comment
         //  initData() から移動。読込は一度だけで良いはず。
+        //  -> 現時点ではresetMusic()でもsmfreadを呼ばないと生成したメロディが残ってしまうが、本来はresetMelodicOutline()で対応すべき処理である。
         smfread((musicData.scc as SCCDataSet).midiSequence)
 
         // TODO: Delete comments
@@ -154,7 +155,9 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         }
         p5ctrl.addButton("resetMusic").setLabel("Reset").setPosition(160f, 645f).setSize(120, 40)
 
+        // --------------------
         // init GuideData
+        // --------------------
         // beat2x depends on dataModel & PApplet.width
         // need to init after setDataModel (initPianoRollDataModel) & settings()
         guideData =
@@ -187,7 +190,6 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     private fun initPianoRollDataModel(part: SCCDataSet.Part) {
         dataModel = part.getPianoRollDataModel(config.initial_blank_measures,
             config.initial_blank_measures + config.num_of_measures)
-        dataModel.firstMeasure = config.initial_blank_measures
     }
 
     /**
@@ -205,17 +207,15 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             mouseX = beat2x(currentMeasure + config.how_in_advance, currentBeat).toInt()
         }
 
+        // Updating the curve and processing related to it
         updateCurveDuringDraw()
+
+        // Drawing visual elements
         drawBasicElements()
         drawAdditionalElements()
-    }
 
-    private fun updateCurveDuringDraw() {
-        if (pmouseX < mouseX && mouseX > beat2x(currentMeasure, currentBeat) + 10) {
-            if (isUpdatable) {
-                updateCurve()
-            }
-        }
+        // The last measure of each page
+        if (isLastMeasure()) processLastMeasure()
     }
 
     /**
@@ -223,11 +223,10 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
      */
     private fun drawBasicElements() {
         // new object
-        for (d in displays) {
-            d.display(this)
-        }
+//        for (d in displays) {
+//            d.display(this)
+//        }
 
-        if (currentMeasure.equals(config.num_of_measures - config.num_of_reset_ahead)) processLastMeasure()
         enhanceCursor()
         drawProgress()
     }
@@ -241,6 +240,19 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         // new object
         for (t in ticker) t.tick()
     }
+
+    private fun isLastMeasure(): Boolean {
+        return currentMeasure == config.num_of_measures - config.num_of_reset_ahead
+    }
+
+    private fun updateCurveDuringDraw() {
+        if (pmouseX < mouseX && mouseX > beat2x(currentMeasure, currentBeat) + 10) {
+            if (isUpdatable) {
+                updateCurve()
+            }
+        }
+    }
+
 
     fun drawGuideCurve() {
         strokeWeight(3f)
@@ -270,34 +282,11 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
 //        model!!.curve.updateCurve(p)
     }
 
-    // 20241118 moved from MelodyData2
-    // Called only from Guided (Temporally method)
-    private fun updateCurveLocal(from: Int, thru: Int) {
-        val nMeas = config.num_of_measures
-        val div = config.division
-        val size2 = nMeas * div
-
-        for (i in from..thru) {
-            if (0 <= i && musicData.curve1[i] != null) {
-                val nn: Double = y2notenum(musicData.curve1[i]!!.toDouble())
-                println("var nn: ${nn} curve1!![ii] == ${musicData.curve1[i]}")
-                val position: Int = (i * size2 / (musicData.curve1.size))
-                if (position >= 0) {
-                    engine.setMelodicOutline((position / div), position % div, nn)
-                }
-            }
-        }
-    }
-
     val isUpdatable: Boolean
         get() {
-            if ((!config.on_drag_only || nowDrawing) &&
-                    isInside(
-                        mouseX,
-                        mouseY
-                    )
+            if ((!config.on_drag_only || nowDrawing) && isInside(mouseX, mouseY)
             ) {
-                val m1 = x2measure(mouseX.toDouble())
+//                val m1 = x2measure(mouseX.toDouble())
                 val m0 = x2measure(pmouseX.toDouble())
                 return 0 <= m0 && pmouseX < mouseX
             } else {
@@ -315,7 +304,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             if (currentMeasureInTotalMeasures < (totalMeasures - config.num_of_reset_ahead)) {
                 dataModel.shiftMeasure(config.num_of_measures)
             }
-            musicData.initCurve()
+            musicData.resetCurve()
 
             // for Guided
             if (guideData != null) guideData!!.shiftCurveGuideView()
@@ -330,6 +319,9 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         if (currentMeasureInTotalMeasures >= totalMeasures) {
             // 生成したメロディを残したまま再スタートするために、measureを戻す
             dataModel.firstMeasure = config.initial_blank_measures
+
+            // Set GuideData start position back to 0
+            resetGuideData()
         }
 
         // SCCGenerator.firstMeasure = num
@@ -352,16 +344,14 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             // +1                               0小節目ではなく1小節目とするために加算
             currentMeasureInTotalMeasures =
                 (currentMeasure + dataModel.firstMeasure - config.initial_blank_measures + 1)
-            val mtotal: Int = dataModel.measureNum * config.repeat_times
+            // TODO:確認後削除 totalMeasures で良いのでは？
+//            val mtotal: Int = dataModel.measureNum * config.repeat_times
             textSize(32f)
             fill(0f, 0f, 0f)
-            text(currentMeasureInTotalMeasures.toString() + " / " + mtotal, 460f, 675f)
+            // TODO:確認後削除 totalMeasures で良いのでは？
+//            text(currentMeasureInTotalMeasures.toString() + " / " + mtotal, 460f, 675f)
+            text(currentMeasureInTotalMeasures.toString() + " / " + totalMeasures, 460f, 675f)
         }
-    }
-
-    override fun stop() {
-        super.stop()
-        //featext.stop()
     }
 
     fun startMusic() {
@@ -369,10 +359,14 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
             stopMusic()
             makeLog("stop")
         } else {
-
             playMusic()
             makeLog("play")
         }
+    }
+
+    private fun resetGuideData() {
+        if (guideData != null) guideData!!.fromMeasure = 0
+        guideData!!.updateCurveGuideView(0, guideData!!.size)
     }
 
     fun resetMusic() {
@@ -383,14 +377,21 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
 
         // 元々resetMusic() で呼ばれていたもの
         // initData() を渡すためにinitDataに入っていた
-        makeLog("reset")
         initMusicPlayer()
 
         // set new PianoRollDataModel to dataModel
         initPianoRollDataModel((musicData.scc.toDataSet()).getFirstPartWithChannel(config.channel_acc))
 
+        // Set GuideData start position back to 0
+        resetGuideData()
+
+        // TODO: [debug] noteをremove & element.setRest(true) してもsmfreadしないとreset前の音が残ってしまう
+        smfread((musicData.scc as SCCDataSet).midiSequence)
+
         // new object
 //        model!!.curve.clear()
+
+        makeLog("reset")
     }
 
     public override fun musicStopped() {
