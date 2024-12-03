@@ -21,25 +21,22 @@ repositories {
 
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs(projectDir)
-//            destinationDirectory.set(file("$buildDir/classes/main"))
-        }
-        kotlin {
-            srcDirs(projectDir)
-//            destinationDirectory.set(file("$buildDir/classes/main"))
-        }
-        groovy {
-            srcDirs(projectDir)
-//            destinationDirectory.set(file("$buildDir/classes/main"))
-        }
-        resources {
-            srcDirs("${projectDir}/resources")
-        }
-    }
-}
+//sourceSets {
+//    main {
+//        java {
+//            srcDirs(projectDir)
+//        }
+//        kotlin {
+//            srcDirs(projectDir)
+//        }
+//        groovy {
+//            srcDirs(projectDir)
+//        }
+//        resources {
+//            srcDirs("${projectDir}/resources")
+//        }
+//    }
+//}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'], exclude: [])
@@ -131,10 +128,10 @@ compileJava {
     options.encoding = "UTF-8"
 }
 
-compileKotlin {
-    configure { inputs.property "resources", sourceSets.main.resources.srcDirs }
-    dependsOn(processResources)
-}
+//compileKotlin {
+//    configure { inputs.property "resources", sourceSets.main.resources.srcDirs }
+//    dependsOn(processResources)
+//}
 
 application {
     // Define the main class for the application.
@@ -149,7 +146,7 @@ task runScript(type: JavaExec) {
     classpath(".")
     println(classpath.asPath)
     main 'groovy.ui.GroovyMain'
-    args 'jp\\jamsketch\\main\\JamSketch.groovy'
+    args 'jp\\kthrlab\\jamsketch\\main\\JamSketch.groovy'
 }
 
 task printEnv {
