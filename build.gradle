@@ -83,11 +83,14 @@ dependencies {
     //https://mvnrepository.com/artifact/commons-logging/commons-logging
     implementation 'commons-logging:commons-logging:1.2'
 
-    // tensorflow java
-    implementation 'org.tensorflow:tensorflow-core-platform:0.4.1'
+//    // https://mvnrepository.com/artifact/org.tensorflow/tensorflow-core-api
+//    implementation 'org.tensorflow:tensorflow-core-api:1.0.0-rc.2'
 
-    // https://mvnrepository.com/artifact/org.tensorflow/proto
-    implementation group: 'org.tensorflow', name: 'proto', version: '1.15.0'
+    // https://mvnrepository.com/artifact/org.tensorflow/tensorflow-core-platform
+    implementation 'org.tensorflow:tensorflow-core-platform:1.0.0-rc.2'
+
+//    // https://mvnrepository.com/artifact/org.tensorflow/proto
+//    implementation group: 'org.tensorflow', name: 'proto', version: '1.15.0'
 
     // added 20221212 yonamine yonamine blow 4 implementation
     implementation 'xml-resolver:xml-resolver:1.2'

@@ -1,8 +1,6 @@
 package jp.jamsketch.main
 
 import jp.crestmuse.cmx.inference.MusicCalculator
-import jp.crestmuse.cmx.misc.ChordSymbol2
-import jp.crestmuse.cmx.processing.CMXController
 import jp.jamsketch.model.melodygenerator.NoteSeqGeneratorSimple
 
 class JamSketchEngineSimple : JamSketchEngineAbstract() {
@@ -19,9 +17,9 @@ class JamSketchEngineSimple : JamSketchEngineAbstract() {
             NoteSeqGeneratorSimple(
                 noteLayer = MELODY_LAYER,
                 chordLayer = CHORD_LAYER,
-                beatsPerMeas = cfg!!.beats_per_measure,
-                entropy_bias = cfg!!.ent_bias,
-                modelPath = cfg!!.model_file)
+                beatsPerMeas = config!!.beats_per_measure,
+                entropy_bias = config!!.ent_bias,
+                modelPath = config!!.model_file)
         return noteSeqGenerator
     }
 

@@ -33,56 +33,34 @@ class NoteSeqGeneratorTF1(
         "G" to floatArrayOf(0f, 0f, 1f, 0f, 0f, 1f, 0f, 1f, 0f, 0f, 0f, 1f)
     )
 
-//    private var tfModel = SavedModelBundle.load("${File(javaClass.getResource("/${tf_model_dir}").path).path}")
     private var tfModel = SavedModelBundle.load(File(javaClass.getResource("/${tf_model_dir}").path).path)
-
-//    private var byteBuffer: ByteBuffer
-//    private var interpreter: Interpreter
-
-//    private var handlerThread: HandlerThread = HandlerThread("tf1Worker_thread")
-//    private var handler: Handler
-
-    init {
-//        handlerThread.start()
-//        handler = Handler(handlerThread.looper)
-//        byteBuffer = loadModelFile(JamSketchActivity.jamSketchAssets, tfl_model_dir)
-//        interpreter = Interpreter(byteBuffer)
-    }
 
     override fun updated(measure: Int, tick: Int, layer: String?, mr: MusicRepresentation?) {
 
-//        val th = Thread {
-//            if (BuildConfig.DEBUG) println("+++++++++ beginning of TF1NoteSeqWorker::updated(${measure}, ${tick}, ${layer}, ${mr})")
-            synchronized(tfModel) {
+        synchronized(tfModel) {
 
-                val currentTime = System.nanoTime()
-                if (currentTime - lastUpdateTime >= 1000 * 1000 * melody_execution_span.toLong()) {
+            val currentTime = System.nanoTime()
+            if (currentTime - lastUpdateTime >= 1000 * 1000 * melody_execution_span.toLong()) {
 
-                    mr!!.getMusicElement("curve", measure, tick).resumeUpdate()
+                mr!!.getMusicElement("curve", measure, tick).resumeUpdate()
 
-                    lastUpdateMeasure = measure
-                    lastUpdateTime = currentTime
+                lastUpdateMeasure = measure
+                lastUpdateTime = currentTime
 
-                    val tf_input = preprocessing(measure, mr)
-                    val tf_output = tfModel.session()
-                        .runner()
-                        .feed(tf_model_layer, TFloat32.tensorOf(tf_input))
-                        .fetch("StatefulPartitionedCall")
-                        .run()
-                        .get(0) as TFloat32
-                    var normalized_data = normalize(tf_output)
-                    setEvidences(measure, tick, normalized_data, mr)
-                }
+                val tf_input = preprocessing(measure, mr)
+                val tf_output = tfModel.session()
+                    .runner()
+                    .feed(tf_model_layer, TFloat32.tensorOf(tf_input))
+                    .fetch("StatefulPartitionedCall")
+                    .run()
+                    .get(0) as TFloat32
+                var normalized_data = normalize(tf_output)
+                setEvidences(measure, tick, normalized_data, mr)
             }
-
-
-//        }
-//        handler.post(th)
-//        println("_________________tf1 thread started")
+        }
     }
 
     //preprocessing input data
-//    private fun preprocessing(measure: Int, mr: MusicRepresentation): Array<Array<Array<FloatArray>>> {
     private fun preprocessing(measure: Int, mr: MusicRepresentation): FloatNdArray {
         val nn_from = tf_note_num_start
         val tf_row = division.toLong()
@@ -117,7 +95,6 @@ class NoteSeqGeneratorTF1(
                 tf_input[0][i][(chord_column_from + j).toLong()][0].setFloat(chord_value)
             }
         }
-        println()
         return tf_input
     }
 

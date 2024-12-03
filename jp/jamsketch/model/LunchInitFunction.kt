@@ -6,20 +6,20 @@ import java.awt.Color
 
 class LunchInitFunction(private val main: JamSketch) {
     fun setup() {
-        loadModel()
-        loadView()
+//        loadModel()
+//        loadView()
     }
 
     protected fun loadView() {
-        main.displays.add(DisplayCurve({ main.model!!.curve.getCurves(JamSketchCurve.PLAYER_MAIN)}, Color(0, 0, 255)))
-        main.displays.add(DisplayCurve({ main.model!!.curve.getCurves(JamSketchCurve.PLAYER_MARGE)}, Color(255, 0, 0, 128)))
+//        main.displays.add(DisplayCurve({ main.model!!.curve.getCurves(JamSketchCurve.PLAYER_MAIN)}, Color(0, 0, 255)))
+//        main.displays.add(DisplayCurve({ main.model!!.curve.getCurves(JamSketchCurve.PLAYER_MARGE)}, Color(255, 0, 0, 128)))
     }
 
     protected fun loadModel() {
         val model = JamSketchModel()
         model.curve.addContainer(JamSketchCurve(main.controller!!))
-        main.model = model
-        main.ticker.add(model)
+//        main.model = model
+//        main.ticker.add(model)
 
         model.curve.setCurveData()
     }

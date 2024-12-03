@@ -9,18 +9,12 @@ import jp.jamsketch.controller.IJamSketchController
 import jp.jamsketch.controller.JamSketchClientController
 import jp.jamsketch.controller.JamSketchController
 import jp.jamsketch.controller.JamSketchServerController
-import jp.jamsketch.model.JamSketchModel
-import jp.jamsketch.model.Point
-import jp.jamsketch.util.Tick
-import jp.jamsketch.view.IDisplay
 import jp.jamsketch.web.ServiceLocator
 import processing.core.PApplet
-import java.util.concurrent.CopyOnWriteArrayList
 import javax.swing.BoxLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-// TODO: Remove temporarily implemented interfaces(IConfigAccessible)
 class JamSketch : SimplePianoRoll(), IConfigAccessible {
 
     companion object {
@@ -60,7 +54,13 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
 
     var guideData: GuideData? = null
 
-    var nowDrawing: Boolean = false
+// TODO: 確認後削除　nowDrawing は mousePressedと同じ値
+//    var nowDrawing: Boolean = false
+
+
+    /**
+     * Unused
+     */
     var username: String = ""
 
     // A dialogue for JamSketchEventListener
@@ -71,11 +71,6 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         it
     }
 
-    // new objects
-    var model: JamSketchModel? = null
-    var displays: CopyOnWriteArrayList<IDisplay> = CopyOnWriteArrayList()
-    var ticker: CopyOnWriteArrayList<Tick> = CopyOnWriteArrayList()
-
     init {
         // TODO: delete comment
         //  initData() から移動。読込は一度だけで良いはず。
@@ -85,42 +80,44 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         // TODO: Delete comments
         // 20241118 initData() で行われていた処理を移動している
         initPianoRollDataModel((musicData.scc as SCCDataSet).getFirstPartWithChannel(config.channel_acc))
-        initMusicPlayer()
+        // init music player ((SMFPlayer)this.musicPlayer[i]).setTickPosition(tick);
+        tickPosition = 0
 
         // init controller
         val listener: JamSketchEventListener = JamSketchEventListenerImpl(panel)
-        //// JamSketch操作クラスを初期化
         val origController = JamSketchController(
             musicData,
             engine,
-//            this::initData
+            this::setPianoRollDataModelFirstMeasure,
         )
 
-        controller = if (config.mode == "server") {
-            // サーバーで動かす場合に使う操作クラスを設定
-            JamSketchServerController(
-                config.host,
-                config.port,
+        controller = when (config.mode) {
+            "server" -> {
+                // サーバーで動かす場合に使う操作クラスを設定
+                JamSketchServerController(
+                    config.host,
+                    config.port,
+                    origController
+                )
+            }
+            "client" -> {
+                // クライアントで動かす場合に使う操作クラスを設定
+                JamSketchClientController(
+                    config.host,
+                    config.port,
+                    origController,
+                    listener
+                )
+            }
+            else -> {
+                // スタンドアロンで動かす場合はそのまま
                 origController
-            )
-        } else if (config.mode == "client") {
-            // クライアントで動かす場合に使う操作クラスを設定
-            JamSketchClientController(
-                config.host,
-                config.port,
-                origController,
-                listener
-            )
-        } else {
-            // スタンドアロンで動かす場合はそのまま
-            origController
+            }
         }
 
         val serviceLocator = ServiceLocator.GetInstance()
         serviceLocator.setContoller(controller!!)
 
-        // ?
-//        LunchInitFunction.create(this).setup()
     }
 
     /**
@@ -182,11 +179,6 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         // add WindowListener (windowClosing) which calls exit();
     }
 
-    private fun initMusicPlayer() {
-        // ((SMFPlayer)this.musicPlayer[i]).setTickPosition(tick);
-        tickPosition = 0
-    }
-
     private fun initPianoRollDataModel(part: SCCDataSet.Part) {
         dataModel = part.getPianoRollDataModel(config.initial_blank_measures,
             config.initial_blank_measures + config.num_of_measures)
@@ -208,7 +200,9 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         }
 
         // Updating the curve and processing related to it
-        updateCurveDuringDraw()
+        if (isUpdatable) {
+            updateCurve()
+        }
 
         // Drawing visual elements
         drawBasicElements()
@@ -222,12 +216,8 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
      * Draw basic visual elements
      */
     private fun drawBasicElements() {
-        // new object
-//        for (d in displays) {
-//            d.display(this)
-//        }
-
         enhanceCursor()
+        drawCurve()
         drawProgress()
     }
 
@@ -236,32 +226,39 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
      */
     private fun drawAdditionalElements() {
         if (guideData != null) drawGuideCurve()
-
-        // new object
-        for (t in ticker) t.tick()
     }
 
     private fun isLastMeasure(): Boolean {
         return currentMeasure == config.num_of_measures - config.num_of_reset_ahead
     }
 
-    private fun updateCurveDuringDraw() {
-        if (pmouseX < mouseX && mouseX > beat2x(currentMeasure, currentBeat) + 10) {
-            if (isUpdatable) {
-                updateCurve()
+    private fun drawCurve() {
+        strokeWeight(3f)
+        stroke(0f, 0f, 255f)
+        with(musicData) {
+            (0 until curve1.size - 1).forEach { i ->
+                if (curve1[i] != null &&  curve1[i+1] != null) {
+                    line(
+                        (i + config.keyboard_width).toDouble(),
+                        curve1[i]!!.toDouble(),
+                        (i + 1 + config.keyboard_width).toDouble(),
+                        curve1[i+1]!!.toDouble()
+                    )
+                }
             }
         }
     }
 
-
-    fun drawGuideCurve() {
+    private fun drawGuideCurve() {
         strokeWeight(3f)
         stroke(100f, 200f, 200f)
-        (0 until (guideData!!.curveGuideView!!.size)).forEach { i ->
-            if (guideData!!.curveGuideView!![i] != null &&
-                guideData!!.curveGuideView!![i+1] != null) {
-                line((i + config.keyboard_width).toDouble(), guideData!!.curveGuideView!![i]!!.toDouble(),
-                    (i+ config.keyboard_width + 1).toDouble(), guideData!!.curveGuideView!![i+1]!!.toDouble())
+        with(guideData!!) {
+            (0 until (curveGuideView!!.size - 1)).forEach { i ->
+                if (curveGuideView!![i] != null &&
+                    curveGuideView!![i+1] != null) {
+                    line((i + config.keyboard_width).toDouble(), curveGuideView!![i]!!.toDouble(),
+                        (i+ config.keyboard_width + 1).toDouble(), curveGuideView!![i+1]!!.toDouble())
+                }
             }
         }
     }
@@ -276,19 +273,23 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
                 y2notenum(mouseY.toDouble()),
             )
         }
-
-        // test JamSketchModel
-//        val p = Point(mouseX, mouseY)
-//        model!!.curve.updateCurve(p)
     }
 
-    val isUpdatable: Boolean
+    // !config.on_drag_only                                 : on_drag_only == false の場合
+    // nowDrawing           : mousePressed() でtrueとなっている。mousePressedと同じ
+    // m0 = x2measure(pmouseX.toDouble())                   : drag開始位置の小節が0以上か
+    // pmouseX < mouseX                                     : 右から左にdragしているか
+    // mouseX > beat2x(currentMeasure, currentBeat) + 10    : 演奏の現在位置より先か
+    private val isUpdatable: Boolean
         get() {
-            if ((!config.on_drag_only || nowDrawing) && isInside(mouseX, mouseY)
+//            if ((!config.on_drag_only || nowDrawing) && isInside(mouseX, mouseY)
+            if ((!config.on_drag_only || mousePressed) && isInside(mouseX, mouseY)
             ) {
 //                val m1 = x2measure(mouseX.toDouble())
                 val m0 = x2measure(pmouseX.toDouble())
-                return 0 <= m0 && pmouseX < mouseX
+                return 0 <= m0
+                        && pmouseX < mouseX
+                        && mouseX > beat2x(currentMeasure, currentBeat) + 10
             } else {
                 return false
             }
@@ -297,7 +298,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     /**
      * The process to be performed in the last measure on the screen
      */
-    fun processLastMeasure() {
+    private fun processLastMeasure() {
         makeLog("melody")
         // TODO: melody_resetting の意味を確認
         if (config.melody_resetting) {
@@ -318,7 +319,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         // the case when playing up to totalMeasures
         if (currentMeasureInTotalMeasures >= totalMeasures) {
             // 生成したメロディを残したまま再スタートするために、measureを戻す
-            dataModel.firstMeasure = config.initial_blank_measures
+            setPianoRollDataModelFirstMeasure(config.initial_blank_measures)
 
             // Set GuideData start position back to 0
             resetGuideData()
@@ -328,28 +329,28 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
         engine.setFirstMeasure(dataModel.firstMeasure)
     }
 
-    fun enhanceCursor() {
+    private fun setPianoRollDataModelFirstMeasure(firstMeasure: Int) {
+        dataModel.firstMeasure = firstMeasure
+    }
+
+    private fun enhanceCursor() {
         if (config.cursor_enhanced) {
             fill(255f, 0f, 0f)
             ellipse(mouseX.toFloat(), mouseY.toFloat(), 10f, 10f)
         }
     }
 
-    fun drawProgress() {
+    private fun drawProgress() {
         if (isNowPlaying) {
-            // currentMeasureInTotalMeasures    演奏全体での現在の小節番号
+            // currentMeasureInTotalMeasures    演奏全体での現在の小節番号（processLastMeasure()でも参照）
             // currentMeasure                   ページ内の小節番号
             // dataModel.firstMeasure           ページ開始位置
             // initial_blank_measures           ページ開始位置のoffset
             // +1                               0小節目ではなく1小節目とするために加算
             currentMeasureInTotalMeasures =
                 (currentMeasure + dataModel.firstMeasure - config.initial_blank_measures + 1)
-            // TODO:確認後削除 totalMeasures で良いのでは？
-//            val mtotal: Int = dataModel.measureNum * config.repeat_times
             textSize(32f)
             fill(0f, 0f, 0f)
-            // TODO:確認後削除 totalMeasures で良いのでは？
-//            text(currentMeasureInTotalMeasures.toString() + " / " + mtotal, 460f, 675f)
             text(currentMeasureInTotalMeasures.toString() + " / " + totalMeasures, 460f, 675f)
         }
     }
@@ -371,22 +372,11 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
 
     fun resetMusic() {
 
-        // TODO: controllerが操作する範囲を確認
         // JamSketch操作クラスを使用してリセットする
         controller!!.reset()
 
-        // 元々resetMusic() で呼ばれていたもの
-        // initData() を渡すためにinitDataに入っていた
-        initMusicPlayer()
-
-        // set new PianoRollDataModel to dataModel
-        initPianoRollDataModel((musicData.scc.toDataSet()).getFirstPartWithChannel(config.channel_acc))
-
         // Set GuideData start position back to 0
         resetGuideData()
-
-        // TODO: [debug] noteをremove & element.setRest(true) してもsmfreadしないとreset前の音が残ってしまう
-        smfread((musicData.scc as SCCDataSet).midiSequence)
 
         // new object
 //        model!!.curve.clear()
@@ -406,12 +396,12 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     }
 
     override fun mousePressed() {
-        nowDrawing = true
+//        nowDrawing = true
     }
 
     override fun mouseReleased() {
-        nowDrawing = false
-        controller!!.mouseReleased(Point(mouseX, mouseY))
+//        nowDrawing = false
+//        controller!!.mouseReleased(Point(mouseX, mouseY))
     }
 
     override fun keyReleased() {
@@ -420,7 +410,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
                 stopMusic()
             } else {
                 tickPosition = 0
-                dataModel.firstMeasure = config.initial_blank_measures
+                setPianoRollDataModelFirstMeasure(config.initial_blank_measures)
                 playMusic()
             }
         } else if (key.equals("b")) {
@@ -437,9 +427,7 @@ class JamSketch : SimplePianoRoll(), IConfigAccessible {
     }
 
     fun makeLog(action: String) {
-// リファクタリング中のため一時的にコメントアウト
-// \output_Thu_Nov_21_15-57-46_GMT+09-00_2024_melody.mid (アクセスが拒否されました。)
-//        makeLog(action, musicData, config.log_dir, this)
+        makeLog(action, musicData, config.log_dir, this)
     }
 
 }

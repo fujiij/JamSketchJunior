@@ -1,5 +1,7 @@
 package jp.jamsketch.controller
 
+import jp.crestmuse.cmx.processing.CMXController
+import jp.crestmuse.cmx.processing.gui.SimplePianoRoll
 import jp.jamsketch.main.JamSketchEngine
 import jp.jamsketch.main.MusicData
 import jp.jamsketch.model.Point
@@ -13,13 +15,14 @@ class JamSketchController
     /**
      * コンストラクタ
      *
-     * @param musicData 楽譜データ
-     * @param engine   JamSketchEngine
+     * @param musicData         楽譜データ
+     * @param engine            JamSketchEngine
+     * @param setPianoRollDataModelFirstMeasure   CurrentBarの描画をresetするためのメソッド
      */
     (
-        private var musicData: MusicData,
-        private val engine: JamSketchEngine,
-//    private val initData: Supplier<MusicData>,
+    private var musicData: MusicData,
+    private val engine: JamSketchEngine,
+    private val setPianoRollDataModelFirstMeasure: (Int) -> Unit ,
     ) : IJamSketchController
 {
     override fun addListener(listener: JamMouseListener?) {
@@ -77,15 +80,17 @@ class JamSketchController
      * リセットする
      */
     override fun reset() {
-        // 渡してきた初期化メソッドを実行する
-        // 本来は初期化処理をこちらに移植した方が理想であるが、初期化処理が画面の操作と絡まっているため、渡してきたメソッドをそのまま実行することで実現している
-//        this.melodyData = initData.get()
 
         this.musicData.resetCurve()
 
-        // remove generated notes
+        // removing generated note
+        // tickPosition must be 0
+        CMXController.getInstance().setTickPosition(0)
         val part = (this.musicData.scc.toDataSet()).getFirstPartWithChannel(musicData.channel_acc)
-        part.noteList.forEach { part.remove(it) }
+        part.remove(part.noteList.toList())
+
+        // reset PianoRollDataModel
+        setPianoRollDataModelFirstMeasure(musicData.initial_blank_measures)
 
         this.engine.resetMelodicOutline()
         this.engine.setFirstMeasure(this.musicData.initial_blank_measures)

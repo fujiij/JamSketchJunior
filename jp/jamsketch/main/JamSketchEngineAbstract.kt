@@ -7,13 +7,33 @@ import jp.crestmuse.cmx.inference.MusicRepresentation
 import jp.crestmuse.cmx.misc.ChordSymbol2
 import jp.crestmuse.cmx.misc.ChordSymbol2.NON_CHORD
 import jp.crestmuse.cmx.processing.CMXController
+import jp.jamsketch.config.AccessibleConfig
 import jp.jamsketch.config.Config
+import jp.jamsketch.config.IConfigAccessible
 
-// TODO: passing config is prohibited
-abstract class JamSketchEngineAbstract : JamSketchEngine {
+abstract class JamSketchEngineAbstract : JamSketchEngine,  IConfigAccessible {
+
+    override var config = AccessibleConfig.config
+    lateinit var mr: MusicRepresentation
+    var cmx: CMXController? = null
+    var scc: SCC? = null
+    var expgen: Any? = null
+
+    companion object {
+        var OUTLINE_LAYER: String = "curve"
+        var MELODY_LAYER: String = "melody"
+        var CHORD_LAYER: String = "chord"
+    }
+
+    abstract fun outlineUpdated(measure: Int, tick: Int)
+    abstract fun automaticUpdate(): Boolean
+    abstract fun initMusicRepresentationLocal()
+    abstract fun initLocal()
+    abstract fun musicCalculatorForOutline(): MusicCalculator?
+
     override fun init(scc: SCC, target_part: SCC.Part, cfg: Config) {
         this.scc = scc
-        this.cfg = cfg
+        this.config = cfg
         cmx = CMXController.getInstance()
 
         initMusicRepresentation()
@@ -32,18 +52,15 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         initLocal()
     }
 
-    abstract fun initMusicRepresentationLocal()
-    abstract fun initLocal()
-
     fun initMusicRepresentation() {
-        this.mr = CMXController.createMusicRepresentation(cfg!!.num_of_measures, cfg!!.division)
+        this.mr = CMXController.createMusicRepresentation(config!!.num_of_measures, config!!.division)
         mr.addMusicLayerCont(OUTLINE_LAYER)
 
         mr.addMusicLayer(
             CHORD_LAYER,
             listOf<ChordSymbol2>(ChordSymbol2.C, ChordSymbol2.F, ChordSymbol2.G),
-            cfg!!.division)
-        cfg!!.chordprog.forEachIndexed { index, chord ->
+            config!!.division)
+        config!!.chordprog.forEachIndexed { index, chord ->
             mr.getMusicElement(CHORD_LAYER, index, 0).setEvidence(ChordSymbol2.parse(chord))
         }
 
@@ -51,12 +68,10 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
 
     }
 
-
     val fullChordProgression: Any
-        get() = List(cfg!!.initial_blank_measures) { NON_CHORD } +
-                List(cfg!!.repeat_times) {cfg!!.chordprog.toList()}.flatten()
+        get() = List(config!!.initial_blank_measures) { NON_CHORD } +
+                List(config!!.repeat_times) { config!!.chordprog.toList()}.flatten()
 
-    abstract fun musicCalculatorForOutline(): MusicCalculator?
 
     override fun setMelodicOutline(measure: Int, tick: Int, value: Double) {
         val e = mr.getMusicElement(OUTLINE_LAYER, measure, tick)
@@ -71,19 +86,15 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         return ((mr.getMusicElement(OUTLINE_LAYER, measure, tick).mostLikely) as Double)
     }
 
-    abstract fun outlineUpdated(measure: Int, tick: Int)
-
-    abstract fun automaticUpdate(): Boolean
-
     override fun resetMelodicOutline() {
         // TODO: need to refer config?
         mr.getMusicElementList(OUTLINE_LAYER).forEach { element ->
-            element.setEvidence(Double.NaN)
+            mr.getMusicElement(OUTLINE_LAYER, element.measure(), element.tick()).setEvidence(Double.NaN)
         }
 
-        mr.getMusicElementList(MELODY_LAYER).forEach { element ->
-            element.setRest(true)
-        }
+//        mr.getMusicElementList(MELODY_LAYER).forEach { element ->
+//            mr.getMusicElement(MELODY_LAYER, element.measure(), element.tick()).setRest(true)
+//        }
 
 //        (0..cfg!!.num_of_measures-1).forEach { i ->
 //            (0..cfg!!.division-1).forEach { j ->
@@ -101,15 +112,4 @@ abstract class JamSketchEngineAbstract : JamSketchEngine {
         return ((mr.getMusicElement(CHORD_LAYER, measure, tick).mostLikely) as ChordSymbol2)
     }
 
-    lateinit var mr: MusicRepresentation
-    var cmx: CMXController? = null
-    var cfg: Config? = null
-    var scc: SCC? = null
-    var expgen: Any? = null
-
-    companion object {
-        var OUTLINE_LAYER: String = "curve"
-        var MELODY_LAYER: String = "melody"
-        var CHORD_LAYER: String = "chord"
-    }
 }

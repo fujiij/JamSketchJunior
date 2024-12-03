@@ -13,15 +13,15 @@ class JamSketchEngineGuided : JamSketchEngineAbstract() {
     }
 
     override fun musicCalculatorForOutline(): NoteSeqGeneratorSimpleGuided {
-        val chGuide: Int = cfg!!.channel_guide
+        val chGuide: Int = config!!.channel_guide
         val partGuide: SCCDataSet.Part = scc!!.toDataSet().getFirstPartWithChannel(chGuide)
         return NoteSeqGeneratorSimpleGuided(
             MELODY_LAYER,
             CHORD_LAYER,
             partGuide,
             mr,
-            cfg!!.initial_blank_measures,
-            cfg!!.beats_per_measure
+            config!!.initial_blank_measures,
+            config!!.beats_per_measure
         )
     }
 
