@@ -21,22 +21,22 @@ class JamSketchEngineTF1(
     private lateinit var noteSeqGeneratorTf1: NoteSeqGeneratorTF1
 
     override fun initMusicRepresentationLocal() {
-            mr.addMusicLayer(MELODY_LAYER, Array(config!!.tf_note_con_col_start){it})
+            mr.addMusicLayer(MELODY_LAYER, Array(config.tf.tf_note_con_col_start){it})
         }
 
         override fun initLocal() {
             noteSeqGeneratorTf1 = NoteSeqGeneratorTF1(
-                config!!.num_of_measures,
-                config!!.division,
-                config!!.melody_execution_span,
-                config!!.tf_model_dir,
-                config!!.tf_model_layer,
-                config!!.tf_note_num_start,
-                config!!.tf_model_input_col,
-                config!!.tf_model_output_col,
-                config!!.tf_rest_col,
-                config!!.tf_chord_col_start,
-                config!!.tf_num_of_melody_element,
+                config.music.num_of_measures,
+                config.music.division,
+                config.music.melody_execution_span,
+                config.tf.tf_model_dir,
+                config.tf.tf_model_layer,
+                config.tf.tf_note_num_start,
+                config.tf.tf_model_input_col,
+                config.tf.tf_model_output_col,
+                config.tf.tf_rest_col,
+                config.tf.tf_chord_col_start,
+                config.tf.tf_num_of_melody_element,
             )
 
         }

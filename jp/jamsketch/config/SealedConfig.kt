@@ -26,25 +26,14 @@ sealed class SealedConfig {
             it.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             it
         }
-        private val defaultConfig: Config = (mapper.readValue(defaultJsonFile, Config::class.java) as Config).let {
-            it.chordprog.forEach { chord ->
-                it.chord_symbols.add(
-                    getDeclaredMember("jp.crestmuse.cmx.misc.ChordSymbol2", chord) as ChordSymbol2
-                )
-            }
-            it
-        }
+        private val defaultConfig: Config = (mapper.readValue(defaultJsonFile, Config::class.java) as Config)
 
         @JvmStatic
         protected var config: Config =
             (mapper.readValue(jsonFile, Config::class.java) as Config).let {
-                // Convert String to ChordSymbol2
-                it.chordprog.forEach { chord ->
-                    it.chord_symbols.add(ChordSymbol2.parse(chord))
-                }
-
                 // Merge user's config and default config
-                (it as ConfigJSON).mergeWithDefaultsInPlace(defaultConfig as ConfigJSON)
+//                (it as ConfigJSON).mergeWithDefaultsInPlace(defaultConfig as ConfigJSON)
+                mergeWithDefaultsInPlace(defaultConfig)
                 it
             }
 

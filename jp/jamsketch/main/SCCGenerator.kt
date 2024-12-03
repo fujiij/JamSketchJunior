@@ -14,7 +14,8 @@ class SCCGenerator(
     var sccdiv: Int,
     var curveLayer: String,
     var expgen: Any?,
-    var cfg: Config
+    val division: Int,
+    val beats_per_measure: Int,
 ) : MusicCalculator {
     override fun updated(measure: Int, tick: Int, layer: String, mr: MusicRepresentation) {
         val e = mr.getMusicElement(layer, measure, tick)
@@ -23,10 +24,10 @@ class SCCGenerator(
             println("curve value: $curvevalue")
             if (curvevalue != null) {
                 println("e.getMostLikely: " + e.mostLikely.javaClass.toString() + ", curvevalue: " + curvevalue.javaClass.toString())
-                val notenum = getNoteNum(e.mostLikely as Int, curvevalue as Double)
-                val duration = e.duration() * sccdiv / (cfg.division / cfg.beats_per_measure)
+               val notenum  = getNoteNum(e.mostLikely as Int, curvevalue as Double)
+                val duration = e.duration() * sccdiv / (division / beats_per_measure)
                 val onset =
-                    ((firstMeasure + measure) * cfg.division + tick) * sccdiv / (cfg.division / cfg.beats_per_measure)
+                    ((firstMeasure + measure) * division + tick) * sccdiv / (division / beats_per_measure)
                 synchronized(this) {
                     if (onset > CMXController.getInstance().tickPosition) {
                         target_part.noteList.forEach { note ->

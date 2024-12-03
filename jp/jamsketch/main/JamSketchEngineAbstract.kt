@@ -31,9 +31,8 @@ abstract class JamSketchEngineAbstract : JamSketchEngine,  IConfigAccessible {
     abstract fun initLocal()
     abstract fun musicCalculatorForOutline(): MusicCalculator?
 
-    override fun init(scc: SCC, target_part: SCC.Part, cfg: Config) {
+    override fun init(scc: SCC, target_part: SCC.Part) {
         this.scc = scc
-        this.config = cfg
         cmx = CMXController.getInstance()
 
         initMusicRepresentation()
@@ -42,7 +41,15 @@ abstract class JamSketchEngineAbstract : JamSketchEngine,  IConfigAccessible {
         //    expgen.start(scc.getFirstPartWithChannel(1),
         //           getFullChordProgression(), cfg.BEATS_PER_MEASURE)
         // }
-        val sccgen = SCCGenerator(target_part as SCCDataSet.Part, scc.division, OUTLINE_LAYER, expgen, cfg)
+
+        val sccgen = SCCGenerator(
+            target_part as SCCDataSet.Part,
+            scc.division,
+            OUTLINE_LAYER,
+            expgen,
+            config.music.division,
+            config.music.beats_per_measure,
+            )
         mr.addMusicCalculator(MELODY_LAYER, sccgen)
         val calc: MusicCalculator? = musicCalculatorForOutline()
         if (calc != null) {
@@ -53,14 +60,14 @@ abstract class JamSketchEngineAbstract : JamSketchEngine,  IConfigAccessible {
     }
 
     fun initMusicRepresentation() {
-        this.mr = CMXController.createMusicRepresentation(config!!.num_of_measures, config!!.division)
+        this.mr = CMXController.createMusicRepresentation(config.music.num_of_measures, config.music.division)
         mr.addMusicLayerCont(OUTLINE_LAYER)
 
         mr.addMusicLayer(
             CHORD_LAYER,
             listOf<ChordSymbol2>(ChordSymbol2.C, ChordSymbol2.F, ChordSymbol2.G),
-            config!!.division)
-        config!!.chordprog.forEachIndexed { index, chord ->
+            config.music.division)
+        config.music.chordprog.forEachIndexed { index, chord ->
             mr.getMusicElement(CHORD_LAYER, index, 0).setEvidence(ChordSymbol2.parse(chord))
         }
 
@@ -69,8 +76,8 @@ abstract class JamSketchEngineAbstract : JamSketchEngine,  IConfigAccessible {
     }
 
     val fullChordProgression: Any
-        get() = List(config!!.initial_blank_measures) { NON_CHORD } +
-                List(config!!.repeat_times) { config!!.chordprog.toList()}.flatten()
+        get() = List(config.music.initial_blank_measures) { NON_CHORD } +
+                List(config.music.repeat_times) { config.music.chordprog.toList()}.flatten()
 
 
     override fun setMelodicOutline(measure: Int, tick: Int, value: Double) {

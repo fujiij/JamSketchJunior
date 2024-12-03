@@ -5,7 +5,7 @@ import jp.crestmuse.cmx.misc.ChordSymbol2
 import jp.jamsketch.config.Config
 
 interface JamSketchEngine {
-    fun init(scc: SCC, target_part: SCC.Part, cfg: Config)
+    fun init(scc: SCC, target_part: SCC.Part)
 
     fun setMelodicOutline(measure: Int, tick: Int, value: Double)
 

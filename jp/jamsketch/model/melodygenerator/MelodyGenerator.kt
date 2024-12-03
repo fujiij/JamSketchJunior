@@ -16,13 +16,13 @@ import jp.jamsketch.model.engine.MelodyGenerateEngineRegistry
 class MelodyGenerator() : IConfigAccessible {
 
     override val config: Config = AccessibleConfig.config
-    private val melodyGenerativeEngine: IMelodyGenerateEngine =
-        MelodyGenerateEngineRegistry.melodyGenerateEngines[config.melody_generate_engine]?.value!!
-
-    private val noteGenerator: AbstractNoteSeqGenerator =
-        NoteSeqGeneratorRegistry.noteSeqGenerators[config.note_seq_generator]?.value!!
+//    private val melodyGenerativeEngine: IMelodyGenerateEngine =
+//        MelodyGenerateEngineRegistry.melodyGenerateEngines[config.melody_generate_engine]?.value!!
+//
+//    private val noteGenerator: AbstractNoteSeqGenerator =
+//        NoteSeqGeneratorRegistry.noteSeqGenerators[config.note_seq_generator]?.value!!
 
     fun generate(data: CurveData) {
-        val melodyData:MelodyData = noteGenerator.generateMusicDataFromCurveData(data, melodyGenerativeEngine)
+//        val melodyData:MelodyData = noteGenerator.generateMusicDataFromCurveData(data, melodyGenerativeEngine)
     }
 }

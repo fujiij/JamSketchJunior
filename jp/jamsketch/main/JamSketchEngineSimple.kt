@@ -17,9 +17,9 @@ class JamSketchEngineSimple : JamSketchEngineAbstract() {
             NoteSeqGeneratorSimple(
                 noteLayer = MELODY_LAYER,
                 chordLayer = CHORD_LAYER,
-                beatsPerMeas = config!!.beats_per_measure,
-                entropy_bias = config!!.ent_bias,
-                modelPath = config!!.model_file)
+                beatsPerMeas = config.music.beats_per_measure,
+                entropy_bias = config.music.ent_bias,
+                modelPath = config.simple.model_file)
         return noteSeqGenerator
     }
 
