@@ -17,7 +17,7 @@ repositories {
 
 application {
     // Define the main class for the application.
-    mainClass = "jp.kthrlab.jamsketch.JamSketch"
+    mainClass = "jp.kthrlab.jamsketch.view.JamSketch"
 }
 
 dependencies {
@@ -93,9 +93,9 @@ tasks.compileJava {
 }
 
 tasks.register<JavaExec>("runApp") {
-    mainClass.set("jp.kthrlab.jamsketch.JamSketch")
+    mainClass.set("jp.kthrlab.jamsketch.view.JamSketch")
     classpath = sourceSets["main"].runtimeClasspath
-    args = listOf("jp.kthrlab.jamsketch.JamSketch")
+    args = listOf("jp.kthrlab.jamsketch.view.JamSketch")
 }
 
 task("printEnv") {
@@ -110,7 +110,7 @@ tasks.register<Jar>("jamsketchJar") {
 
     //Specify the main class for manifest file.
     manifest {
-        attributes["Main-Class"] = "jp.jamsketch.JamSketch"
+        attributes["Main-Class"] = "jp.jamsketch.view.JamSketch"
     }
 
     //Include multiple dependencies.
