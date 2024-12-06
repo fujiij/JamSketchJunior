@@ -1,7 +1,5 @@
 package jp.kthrlab.jamsketch.controller
 
-import jp.kthrlab.jamsketch.model.Point
-
 /**
  * JamSketchの操作クラスのインターフェース
  */
@@ -41,7 +39,7 @@ interface IJamSketchController {
     /**
      * 仮実装
      */
-    fun addListener(listener: JamMouseListener?)
-
-    fun mouseReleased(p: Point?)
+//    fun addListener(listener: JamMouseListener?)
+//
+//    fun mouseReleased(p: Point?)
 }

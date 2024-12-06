@@ -1,7 +1,6 @@
 package jp.kthrlab.jamsketch.controller
 
-import jp.kthrlab.jamsketch.main.JamSketchEventListener
-import jp.kthrlab.jamsketch.model.Point
+import jp.kthrlab.jamsketch.view.JamSketchEventListener
 import jp.kthrlab.jamsketch.web.ClientParameter
 import jp.kthrlab.jamsketch.web.WebSocketClient
 
@@ -56,13 +55,13 @@ class JamSketchClientController(
         innerController.reset()
     }
 
-    override fun addListener(listener: JamMouseListener?) {
-        innerController.addListener(listener)
-    }
-
-    override fun mouseReleased(p: Point?) {
-        innerController.mouseReleased(p)
-    }
+//    override fun addListener(listener: JamMouseListener?) {
+//        innerController.addListener(listener)
+//    }
+//
+//    override fun mouseReleased(p: Point?) {
+//        innerController.mouseReleased(p)
+//    }
 
     private val webSocketClient = WebSocketClient()
 

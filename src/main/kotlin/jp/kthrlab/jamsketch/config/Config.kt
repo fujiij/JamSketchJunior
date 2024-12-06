@@ -1,16 +1,10 @@
 package jp.kthrlab.jamsketch.config
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import jp.crestmuse.cmx.misc.ChordSymbol2
-
-//class Config() : ConfigJSON() {
 class Config {
-//    @JsonIgnore
-//    var chord_symbols: MutableList<ChordSymbol2> = mutableListOf()
     val general = General()
     val music = Music()
     val simple = Simple()
-    val ga = GA()
+//    val ga = GA()
     val tf = TF()
 }
 
@@ -63,9 +57,9 @@ data class Simple(
 /**
  * Genetic Algorithm
  */
-data class GA(
-    var calc_length: Int = 0,
-)
+//data class GA(
+//    var calc_length: Int = 0,
+//)
 
 /**
  * TensorFlow

@@ -1,9 +1,8 @@
 package jp.kthrlab.jamsketch.controller
 
 import jp.crestmuse.cmx.processing.CMXController
-import jp.kthrlab.jamsketch.main.JamSketchEngine
-import jp.kthrlab.jamsketch.main.MusicData
-import jp.kthrlab.jamsketch.model.Point
+import jp.kthrlab.jamsketch.engine.JamSketchEngine
+import jp.kthrlab.jamsketch.music.data.MusicData
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
@@ -21,16 +20,16 @@ class JamSketchController
     (
     private var musicData: MusicData,
     private val engine: JamSketchEngine,
-    private val setPianoRollDataModelFirstMeasure: (Int) -> Unit ,
+    private val setPianoRollDataModelFirstMeasure: (Int) -> Unit,
     ) : IJamSketchController
 {
-    override fun addListener(listener: JamMouseListener?) {
-        listeners.add(listener)
-    }
-
-    override fun mouseReleased(p: Point?) {
-        for (m in listeners) m.mouseReleased(p)
-    }
+//    override fun addListener(listener: JamMouseListener?) {
+//        listeners.add(listener)
+//    }
+//
+//    override fun mouseReleased(p: Point?) {
+//        for (m in listeners) m.mouseReleased(p)
+//    }
 
     /**
      * 初期化する
@@ -95,6 +94,4 @@ class JamSketchController
         this.engine.setFirstMeasure(this.musicData.initial_blank_measures)
 
     }
-
-    private val listeners = CopyOnWriteArrayList<JamMouseListener>()
 }

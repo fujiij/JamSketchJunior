@@ -32,7 +32,6 @@ sealed class SealedConfig {
         protected var config: Config =
             (mapper.readValue(jsonFile, Config::class.java) as Config).let {
                 // Merge user's config and default config
-//                (it as ConfigJSON).mergeWithDefaultsInPlace(defaultConfig as ConfigJSON)
                 mergeWithDefaultsInPlace(defaultConfig)
                 it
             }
@@ -50,7 +49,6 @@ sealed class SealedConfig {
                 userJsonFile.createNewFile()
             }
 
-            mapper.addMixIn(ConfigJSON::class.java, Config::class.java)
             mapper.writeValue(userJsonFile, config)
         }
 

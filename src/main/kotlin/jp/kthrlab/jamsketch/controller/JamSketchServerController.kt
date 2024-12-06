@@ -1,7 +1,6 @@
 package jp.kthrlab.jamsketch.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import jp.kthrlab.jamsketch.model.Point
 import jp.kthrlab.jamsketch.web.ServerParameter
 import jp.kthrlab.jamsketch.web.ServiceLocator
 import jp.kthrlab.jamsketch.web.WebSocketApi
@@ -52,13 +51,13 @@ class JamSketchServerController(host: String?, port: Int, private val innerContr
         resetClients()
     }
 
-    override fun addListener(listener: JamMouseListener?) {
-        innerController.addListener(listener)
-    }
-
-    override fun mouseReleased(p: Point?) {
-        innerController.mouseReleased(p)
-    }
+//    override fun addListener(listener: JamMouseListener?) {
+//        innerController.addListener(listener)
+//    }
+//
+//    override fun mouseReleased(p: Point?) {
+//        innerController.mouseReleased(p)
+//    }
 
     fun resetClients() {
         val serviceLocator = ServiceLocator.GetInstance()

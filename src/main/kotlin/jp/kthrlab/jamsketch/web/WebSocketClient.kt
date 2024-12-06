@@ -2,7 +2,7 @@ package jp.kthrlab.jamsketch.web
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.websocket.*
-import jp.kthrlab.jamsketch.main.JamSketchEventListener
+import jp.kthrlab.jamsketch.view.JamSketchEventListener
 import java.net.URI
 
 /**
