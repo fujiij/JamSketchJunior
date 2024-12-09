@@ -68,15 +68,6 @@ dependencies {
     // https://mvnrepository.com/artifact/javax.websocket/javax.websocket-api
     compileOnly("javax.websocket:javax.websocket-api:1.1")
 
-    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    implementation("com.fasterxml.jackson.core:jackson-core:2.13.0")
-
-    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
-
-    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0")
-
     implementation("org.glassfish.tyrus:tyrus-server:2.0.0")
     implementation("org.glassfish.tyrus:tyrus-container-grizzly-server:2.0.0")
     implementation("org.glassfish.tyrus.bundles:tyrus-standalone-client:2.1.5")
